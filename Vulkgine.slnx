@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Vulkgine.vcxproj" Id="b368a525-3986-4c9b-868f-f0c3cab07207" />
+</Solution>
