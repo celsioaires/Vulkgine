@@ -87,7 +87,7 @@ void Gui::updatePanels(SDL_Event* event)
 	ImGui_ImplSDL2_ProcessEvent(event);
 }
 
-void Gui::drawPanels(ComputeEffect& computeEffect)
+void Gui::drawPanels(ComputeEffect& computeEffect, float& renderScale)
 {
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
@@ -95,6 +95,10 @@ void Gui::drawPanels(ComputeEffect& computeEffect)
 	ImGui::NewFrame();
 
 	mInspector.drawPanel(computeEffect);
+
+	ImGui::Begin("Test");
+	ImGui::SliderFloat("Render scale", &renderScale, 0.3f, 1.f);
+	ImGui::End();
 
 	ImGui::Render();
 }

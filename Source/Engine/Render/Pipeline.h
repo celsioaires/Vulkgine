@@ -22,4 +22,6 @@ struct Pipeline
 	void initializeGraphics(VkInstance instance);
 
 	void cleanupInitialized();
+
+	void updateDescriptors(VkImageView imageView);
 };

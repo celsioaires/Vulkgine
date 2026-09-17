@@ -263,25 +263,7 @@ void Context::cleanupInitialized()
 		frames[i].commandPool = NULL;
 	}
 
-	// Depth image and view
-	vkDestroyImageView(mDevice, mDepthImage.view, NULL);
-	mDepthImage.view = NULL;
-
-	vmaDestroyImage(allocator, mDepthImage.handle, mDepthImage.allocation);
-	mDepthImage.handle = NULL;
-	mDepthImage.allocation = NULL;
-
-	// Render image and view
-	vkDestroyImageView(mDevice, renderImage.view, NULL);
-	renderImage.view = NULL;
-
-	vmaDestroyImage(allocator, renderImage.handle, renderImage.allocation);
-	renderImage.handle = NULL;
-	renderImage.allocation = NULL;
-
-	// Swapchain
-	vkDestroySwapchainKHR(mDevice, swapchain, NULL);
-	swapchain = NULL;
+	cleanupSwapchain();
 
 	// Allocator
 	vmaDestroyAllocator(allocator);
@@ -302,4 +284,28 @@ void Context::cleanupInitialized()
 
 	vkDestroyInstance(instance, NULL);
 	instance = NULL;
+}
+
+void Context::cleanupSwapchain()
+{
+	// Depth image and view
+	vkDestroyImageView(mDevice, mDepthImage.view, NULL);
+	mDepthImage.view = NULL;
+
+	vmaDestroyImage(allocator, mDepthImage.handle, mDepthImage.allocation);
+	mDepthImage.handle = NULL;
+	mDepthImage.allocation = NULL;
+
+	// Render image and view
+	vkDestroyImageView(mDevice, renderImage.view, NULL);
+	renderImage.view = NULL;
+
+	vmaDestroyImage(allocator, renderImage.handle, renderImage.allocation);
+	renderImage.handle = NULL;
+	renderImage.allocation = NULL;
+
+	// Swapchain
+	vkDestroySwapchainKHR(mDevice, swapchain, NULL);
+	swapchain = NULL;
+
 }

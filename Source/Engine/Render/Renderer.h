@@ -18,11 +18,15 @@ private:
 	Extent2D mExtent;
 	Pipeline mPipeline;
 	ComputeEffect mComputeEffect;
+	bool mResizeRequested = false;
+	float mRenderScale = 1.0f;
 public:
 	void initializeContext(SDL_Window* window, uint32_t width, uint32_t height);
 	void initializePipeline();
 
 	void cleanupInitialized();
+
+	void resizeSwapchain();
 
 	VkCommandBuffer beginRender();
 	void endRender();
@@ -37,4 +41,6 @@ public:
 	// Getters
 	Context& getContext() { return mContext; }
 	ComputeEffect& getComputeEffect() { return mComputeEffect; }
+	bool resizeRequested() { return mResizeRequested; }
+	float& getRenderScale() { return mRenderScale; }
 };

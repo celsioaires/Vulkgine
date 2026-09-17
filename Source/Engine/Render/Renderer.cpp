@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include <SDL.h>
 #include <vulkan/vulkan.h>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -31,23 +32,47 @@ void Renderer::cleanupInitialized()
 	mContext.cleanupInitialized();
 }
 
+void Renderer::resizeSwapchain()
+{
+	waitForRender();
+
+	mContext.cleanupSwapchain();
+
+	int width, height;
+	SDL_GetWindowSize(mContext.mWindow, &width, &height);
+
+	mContext.initializeSwapchain(width, height);
+	mPipeline.updateDescriptors(mContext.renderImage.view);
+
+	mResizeRequested = false;
+}
+
 VkCommandBuffer Renderer::beginRender()
 {
 	mFrame = mContext.frames[mFrameNumber % FRAME_OVERLAP];
 	mRenderImage = mContext.renderImage;
 	mDepthImage = mContext.mDepthImage;
 
-	mExtent.width = mRenderImage.extent.width;
-	mExtent.height = mRenderImage.extent.height;
+	mExtent.width = std::min(mContext.swapchainExtent.width, mRenderImage.extent.width) * mRenderScale;
+	mExtent.height = std::min(mContext.swapchainExtent.height, mRenderImage.extent.height) * mRenderScale;
+
+	//mExtent.width = mRenderImage.extent.width;
+	//mExtent.height = mRenderImage.extent.height;
 
 	// Acquire swapchain image
 	VkDevice device = mContext.mDevice;
 	VkFence frameFence = mFrame.frameFence;
 
 	VK_ASSERT(vkWaitForFences(device, 1, &frameFence, true, 1000000000));
-	VK_ASSERT(vkResetFences(device, 1, &frameFence));
 
-	VK_ASSERT(vkAcquireNextImageKHR(device, mContext.swapchain, 1000000000, mFrame.acquireSemaphore, NULL, &mSwapchainImageIndex));
+	VkResult result = vkAcquireNextImageKHR(device, mContext.swapchain, 1000000000, mFrame.acquireSemaphore, NULL, &mSwapchainImageIndex);
+	
+	if (result == VK_SUBOPTIMAL_KHR)
+	{
+		mResizeRequested = true;
+	}
+
+	VK_ASSERT(vkResetFences(device, 1, &frameFence));
 
 	// Begin command buffer
 	VkCommandBuffer commandBuffer = mFrame.commandBuffer;
@@ -166,7 +191,12 @@ void Renderer::endRender()
 	presentInfo.swapchainCount = 1;
 	presentInfo.waitSemaphoreCount = 1;
 
-	VK_ASSERT(vkQueuePresentKHR(mContext.graphicsQueue, &presentInfo));
+	VkResult result = vkQueuePresentKHR(mContext.graphicsQueue, &presentInfo);
+
+	if (result == VK_SUBOPTIMAL_KHR)
+	{
+		mResizeRequested = true;
+	}
 
 	mFrameNumber++;
 }

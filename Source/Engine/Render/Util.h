@@ -2,9 +2,19 @@
 
 #include <cassert>
 
+#include <fmt/core.h>
+#include <vulkan/vk_enum_string_helper.h>
+
 #include "Image.h"
 
-#define VK_ASSERT(result) assert(result == 0)
+#define VK_ASSERT(result) \
+    do { \
+        VkResult r = result; \
+        if (r != VK_SUCCESS) { \
+			fmt::println("[VK_ASSERT]: {} failed with {}", #result, string_VkResult(r)); \
+			assert(false); \
+		} \
+	} while (0)
 
 class Util
 {

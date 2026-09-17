@@ -11,7 +11,7 @@ void Engine::initializeGui()
 	Context context = mRenderer.getContext();
 
 	mGui.initializeDescriptors(context.mDevice);
-	mGui.initializeContext(context.mWindow, context.instance, context.physicalDevice, context.graphicsQueue);
+	mGui.initializeContext(context.mWindow,context.instance, context.physicalDevice, context.graphicsQueue);
 }
 
 void Engine::initializeScene()
@@ -31,11 +31,14 @@ void Engine::cleanupInitialized()
 void Engine::updateGui(Event event)
 {
 	mGui.updatePanels(event.mPointer);
-	mGui.drawPanels(mRenderer.getComputeEffect());
+	mGui.drawPanels(mRenderer.getComputeEffect(), mRenderer.getRenderScale());
 }
 
 void Engine::drawFrame()
 {
+	if (mRenderer.resizeRequested())
+		mRenderer.resizeSwapchain();
+
 	VkCommandBuffer renderingBuffer = mRenderer.beginRender();
 
 	// TODO: separate dynamic rendering
@@ -44,6 +47,5 @@ void Engine::drawFrame()
 
 	mRenderer.renderScene(renderingBuffer, mScene);
 	mGui.renderPanels(renderingBuffer);
-
 	mRenderer.endRender();
 }

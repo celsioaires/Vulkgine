@@ -33,4 +33,5 @@ struct Context
 	void initializeSyncronization();
 
 	void cleanupInitialized();
+	void cleanupSwapchain();
 };

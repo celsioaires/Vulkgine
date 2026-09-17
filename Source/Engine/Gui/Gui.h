@@ -17,7 +17,7 @@ public:
 	void cleanupInitialized();
 
 	void updatePanels(SDL_Event* event);
-	void drawPanels(ComputeEffect& computeEffect);
+	void drawPanels(ComputeEffect& computeEffect, float& renderScale);
 
 	void renderPanels(VkCommandBuffer commandBuffer);
 };

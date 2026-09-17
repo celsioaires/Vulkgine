@@ -8,6 +8,8 @@ layout (location = 0) out vec4 outFragColor;
 
 void main() 
 {
-	//return red
-	outFragColor = vec4(inColor,1.0f);
+    if (gl_FrontFacing)
+        outFragColor = vec4(inColor, 0.5f);
+    else
+        outFragColor = vec4(0.0f, 0.0f, 1.0f, 0.5f);
 }

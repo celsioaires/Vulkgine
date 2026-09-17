@@ -45,20 +45,7 @@ void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 
 	VK_ASSERT(vkAllocateDescriptorSets(device, &setInfo, &mDescriptorSet));
 
-	// Descriptor set write
-	VkDescriptorImageInfo descriptorImageInfo{};
-	descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-	descriptorImageInfo.imageView = imageView;
-
-	VkWriteDescriptorSet descriptorSetWrite{};
-	descriptorSetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorSetWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	descriptorSetWrite.pImageInfo = &descriptorImageInfo;
-	descriptorSetWrite.dstSet = mDescriptorSet;
-	descriptorSetWrite.descriptorCount = 1;
-	descriptorSetWrite.dstBinding = 0;
-
-	vkUpdateDescriptorSets(device, 1, &descriptorSetWrite, 0, NULL);
+	updateDescriptors(imageView);
 }
 
 void Pipeline::initializeShaders()
@@ -152,7 +139,19 @@ void Pipeline::initializeGraphics(VkInstance instance)
 		VK_COLOR_COMPONENT_A_BIT;
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
+	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 	colorBlendAttachment.colorWriteMask = colorComponents;
+	colorBlendAttachment.blendEnable = true;
+
+	// additive
+	//colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
+
+	// alphablend
+	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 
 	VkPipelineColorBlendStateCreateInfo colorBlendState{};
 	colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -288,4 +287,22 @@ void Pipeline::cleanupInitialized()
 	mDescriptorSetLayout = NULL;
 
 	mDevice = NULL;
+}
+
+void Pipeline::updateDescriptors(VkImageView imageView)
+{
+	// Descriptor set write
+	VkDescriptorImageInfo descriptorImageInfo{};
+	descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+	descriptorImageInfo.imageView = imageView;
+
+	VkWriteDescriptorSet descriptorSetWrite{};
+	descriptorSetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	descriptorSetWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	descriptorSetWrite.pImageInfo = &descriptorImageInfo;
+	descriptorSetWrite.dstSet = mDescriptorSet;
+	descriptorSetWrite.descriptorCount = 1;
+	descriptorSetWrite.dstBinding = 0;
+
+	vkUpdateDescriptorSets(mDevice, 1, &descriptorSetWrite, 0, NULL);
 }
