@@ -18,7 +18,8 @@ struct Context
 	VmaAllocator allocator = NULL;
 	VkSwapchainKHR swapchain = NULL;
 	Extent2D swapchainExtent{ 0, 0 };
-	std::vector<VkImage> swapchainImages;
+	std::vector<VkImage> swapchainImages{};
+	std::vector<VkImageView> mSwapchainViews{};
 	Image renderImage;
 	Image mDepthImage;
 	Frame frames[FRAME_OVERLAP];

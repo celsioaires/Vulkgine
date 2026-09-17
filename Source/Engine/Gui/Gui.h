@@ -19,5 +19,5 @@ public:
 	void updatePanels(SDL_Event* event);
 	void drawPanels(ComputeEffect& computeEffect, float& renderScale);
 
-	void renderPanels(VkCommandBuffer commandBuffer);
+	void renderPanels(VkCommandBuffer commandBuffer, VkImageView imageView, Extent2D extent);
 };

@@ -39,15 +39,15 @@ void Gui::initializeContext(SDL_Window* window, VkInstance instance, VkPhysicalD
 {
 	assert(ImGui::CreateContext());
 
-	ImGui::StyleColorsLight();
+	//ImGui::StyleColorsLight();
+	ImGui::StyleColorsClassic();
 
 	assert(ImGui_ImplSDL2_InitForVulkan(window));
 
-	VkFormat colorAttachmentFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+	VkFormat colorAttachmentFormat = VK_FORMAT_B8G8R8A8_UNORM;
 
 	VkPipelineRenderingCreateInfoKHR pipelineRenderingInfo{};
 	pipelineRenderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-	pipelineRenderingInfo.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT; // TODO: remove
 	pipelineRenderingInfo.pColorAttachmentFormats = &colorAttachmentFormat;
 	pipelineRenderingInfo.colorAttachmentCount = 1;
 
@@ -96,14 +96,35 @@ void Gui::drawPanels(ComputeEffect& computeEffect, float& renderScale)
 
 	mInspector.drawPanel(computeEffect);
 
-	ImGui::Begin("Test");
+	ImGui::Begin("Dynamic resolution");
 	ImGui::SliderFloat("Render scale", &renderScale, 0.3f, 1.f);
 	ImGui::End();
 
 	ImGui::Render();
 }
 
-void Gui::renderPanels(VkCommandBuffer commandBuffer)
+void Gui::renderPanels(VkCommandBuffer commandBuffer, VkImageView imageView, Extent2D extent)
 {
-	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+	// Color attachment
+	VkRenderingAttachmentInfo colorAttachmentInfo{};
+	colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+	colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachmentInfo.imageView = imageView;
+	colorAttachmentInfo.clearValue.color = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+	// Begin rendering
+	VkRenderingInfo renderingInfo{};
+	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+	renderingInfo.renderArea.extent = { extent.width, extent.height };
+	renderingInfo.pColorAttachments = &colorAttachmentInfo;
+	renderingInfo.colorAttachmentCount = 1;
+	renderingInfo.layerCount = 1;
+
+	vkCmdBeginRendering(commandBuffer, &renderingInfo);
+
+	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer); // ImGui rendering
+
+	vkCmdEndRendering(commandBuffer);
 }

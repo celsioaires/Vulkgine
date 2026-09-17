@@ -105,11 +105,16 @@ void Context::initializeSwapchain(uint32_t width, uint32_t height)
 	surfaceFormat.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	surfaceFormat.format = VK_FORMAT_B8G8R8A8_UNORM;
 
+	VkImageUsageFlags imageUsages =
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+		VK_IMAGE_USAGE_STORAGE_BIT |
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
 	vkb::Result<vkb::Swapchain> swapchainResult = swapchainBuilder
 		.set_desired_format(surfaceFormat)
 		.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
 		.set_desired_extent(width, height)
-		.add_image_usage_flags(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+		.add_image_usage_flags(imageUsages)
 		.build();
 
 	assert(swapchainResult.has_value());
@@ -118,16 +123,23 @@ void Context::initializeSwapchain(uint32_t width, uint32_t height)
 	swapchain = vkbSwapchain.swapchain;
 	swapchainExtent = { width, height };
 
+	// Images
 	vkb::Result<std::vector<VkImage>> swapchainImagesResult = vkbSwapchain.get_images();
 	assert(swapchainImagesResult.has_value());
 
-	swapchainImages = swapchainImagesResult.value();;
+	swapchainImages = swapchainImagesResult.value();
+
+	// Views
+	vkb::Result<std::vector<VkImageView>> swapchainViewsResult = vkbSwapchain.get_image_views();
+	assert(swapchainViewsResult.has_value());
+
+	mSwapchainViews = swapchainViewsResult.value();
 
 	// Render image
 	renderImage.format = VK_FORMAT_R16G16B16A16_SFLOAT;
 	renderImage.extent = { width, height, 1 };
 
-	VkImageUsageFlags imageUsages =
+	imageUsages =
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 		VK_IMAGE_USAGE_STORAGE_BIT |
@@ -304,8 +316,14 @@ void Context::cleanupSwapchain()
 	renderImage.handle = NULL;
 	renderImage.allocation = NULL;
 
+	// Views
+	for (VkImageView view : mSwapchainViews)
+	{
+		vkDestroyImageView(mDevice, view, NULL);
+		view = NULL;
+	}
+
 	// Swapchain
 	vkDestroySwapchainKHR(mDevice, swapchain, NULL);
 	swapchain = NULL;
-
 }

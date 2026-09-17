@@ -1,17 +1,17 @@
 #include "Engine.h"
 
-void Engine::initializeRenderer(Window window)
+void Engine::initializeRenderer(Window win)
 {
-	mRenderer.initializeContext(window.pointer, window.width, window.height);
+	mRenderer.initializeContext(win.pointer, win.width, win.height);
 	mRenderer.initializePipeline();
 }
 
 void Engine::initializeGui()
 {
-	Context context = mRenderer.getContext();
+	Context ctx = mRenderer.getContext();
 
-	mGui.initializeDescriptors(context.mDevice);
-	mGui.initializeContext(context.mWindow,context.instance, context.physicalDevice, context.graphicsQueue);
+	mGui.initializeDescriptors(ctx.mDevice);
+	mGui.initializeContext(ctx.mWindow, ctx.instance, ctx.physicalDevice, ctx.graphicsQueue);
 }
 
 void Engine::initializeScene()
@@ -28,9 +28,9 @@ void Engine::cleanupInitialized()
 	mRenderer.cleanupInitialized();
 }
 
-void Engine::updateGui(Event event)
+void Engine::updateGui(Event e)
 {
-	mGui.updatePanels(event.mPointer);
+	mGui.updatePanels(e.mPointer);
 	mGui.drawPanels(mRenderer.getComputeEffect(), mRenderer.getRenderScale());
 }
 
@@ -41,11 +41,13 @@ void Engine::drawFrame()
 
 	VkCommandBuffer renderingBuffer = mRenderer.beginRender();
 
-	// TODO: separate dynamic rendering
-	// TODO: begin dynamic rendering for scene with color and depth attach
-	// TODO: begin dynamic rendering for gui with only color attach
-
+	// Scene
+	mRenderer.beginScene(renderingBuffer);
 	mRenderer.renderScene(renderingBuffer, mScene);
-	mGui.renderPanels(renderingBuffer);
+	mRenderer.endScene(renderingBuffer);
+
+	// Gui
+	mGui.renderPanels(renderingBuffer, mRenderer.getSwapchainView(), mRenderer.getSwapchainExtent());
+
 	mRenderer.endRender();
 }

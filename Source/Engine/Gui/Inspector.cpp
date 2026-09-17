@@ -6,10 +6,10 @@ void Inspector::drawPanel(ComputeEffect& computeEffect)
 {
 	ComputePushConstants& pushConstants = computeEffect.mPushConstants;
 
-	ImGui::Begin("Inspector");
+	ImGui::Begin("Compute effect");
 
-	ImGui::Text("Compute push constants:");
-	ImGui::SliderFloat4("data 1", (float*)&pushConstants.data1, 0.0f, 1.0f);
+	ImGui::Text("Push constants:");
+	ImGui::SliderFloat4("Data", (float*)&pushConstants.data1, 0.0f, 1.0f);
 
 	/* 
 	ImGui::SliderFloat4("data 2", (float*)&pushConstants.data2, 0.0f, 1.0f);

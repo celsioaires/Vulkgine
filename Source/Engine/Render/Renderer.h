@@ -31,6 +31,9 @@ public:
 	VkCommandBuffer beginRender();
 	void endRender();
 
+	void beginScene(VkCommandBuffer commandBuffer);
+	void endScene(VkCommandBuffer commandBuffer);
+
 	void renderScene(VkCommandBuffer commandBuffer, Scene& scene);
 
 	VkCommandBuffer beginImmediateRender();
@@ -43,4 +46,6 @@ public:
 	ComputeEffect& getComputeEffect() { return mComputeEffect; }
 	bool resizeRequested() { return mResizeRequested; }
 	float& getRenderScale() { return mRenderScale; }
+	VkImageView getSwapchainView() { return mContext.mSwapchainViews[mSwapchainImageIndex]; }
+	Extent2D getSwapchainExtent() { return mContext.swapchainExtent; }
 };

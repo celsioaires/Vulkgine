@@ -68,9 +68,7 @@ VkCommandBuffer Renderer::beginRender()
 	VkResult result = vkAcquireNextImageKHR(device, mContext.swapchain, 1000000000, mFrame.acquireSemaphore, NULL, &mSwapchainImageIndex);
 	
 	if (result == VK_SUBOPTIMAL_KHR)
-	{
 		mResizeRequested = true;
-	}
 
 	VK_ASSERT(vkResetFences(device, 1, &frameFence));
 
@@ -85,56 +83,6 @@ VkCommandBuffer Renderer::beginRender()
 
 	VK_ASSERT(vkBeginCommandBuffer(commandBuffer, &commandBufferBeginInfo));
 
-	// Transition image for clear and compute
-	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
-
-	/* Clear image color
-	VkClearColorValue clearColor{ 0.0f, 0.0f, 0.0f, 1.0f };
-	VkImageSubresourceRange imageSubresourceRange = Util::imageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
-
-	vkCmdClearColorImage(commandBuffer, mImage.handle, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &imageSubresourceRange); */
-
-	// Push constants and draw compute gradient grid 
-	VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
-	VkPipelineLayout computeLayout = mPipeline.mComputePipelineLayout;
-
-	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mComputePipeline);
-	vkCmdBindDescriptorSets(commandBuffer, bindPoint, computeLayout, 0, 1, &mPipeline.mDescriptorSet, 0, NULL);
-	vkCmdPushConstants(commandBuffer, computeLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &mComputeEffect);
-	vkCmdDispatch(commandBuffer, (uint32_t)std::ceil(mExtent.width / 16.0), (uint32_t)std::ceil(mExtent.height / 16.0), 1);
-	
-	// Transition image for rendering
-	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-	Util::cmdTransitionImage(commandBuffer, mDepthImage.handle, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
-
-	// Color attachment
-	VkRenderingAttachmentInfo colorAttachmentInfo{};
-	colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-	colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-	colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	colorAttachmentInfo.imageView = mRenderImage.view;
-
-	// Depth attachment
-	VkRenderingAttachmentInfo depthAttachmentInfo{};
-	depthAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-	depthAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-	depthAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	depthAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	depthAttachmentInfo.imageView = mDepthImage.view;
-	depthAttachmentInfo.clearValue.depthStencil.depth = 1.0f;
-
-	// Begin rendering
-	VkRenderingInfo renderingInfo{};
-	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-	renderingInfo.renderArea.extent = { mExtent.width, mExtent.height };
-	renderingInfo.pColorAttachments = &colorAttachmentInfo;
-	renderingInfo.pDepthAttachment= &depthAttachmentInfo;
-	renderingInfo.colorAttachmentCount = 1;
-	renderingInfo.layerCount = 1;
-
-	vkCmdBeginRendering(commandBuffer, &renderingInfo);
-
 	return commandBuffer;
 }
 
@@ -142,20 +90,8 @@ void Renderer::endRender()
 {
 	VkCommandBuffer commandBuffer = mFrame.commandBuffer;
 
-	// End rendering
-	vkCmdEndRendering(commandBuffer);
-
-	// Transition image for copy
-	VkImage swapchainImage = mContext.swapchainImages[mSwapchainImageIndex];
-
-	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-	Util::cmdTransitionImage(commandBuffer, swapchainImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-	// Copy image to swapchain image
-	Util::cmdCopyImageToImage(commandBuffer, mRenderImage.handle, swapchainImage, { mExtent.width, mExtent.height }, { mContext.swapchainExtent.width, mContext.swapchainExtent.height });
-
 	// Transition swapchain image for present
-	Util::cmdTransitionImage(commandBuffer, swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	Util::cmdTransitionImage(commandBuffer, mContext.swapchainImages[mSwapchainImageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
 	// End command buffer
 	VK_ASSERT(vkEndCommandBuffer(commandBuffer));
@@ -194,11 +130,79 @@ void Renderer::endRender()
 	VkResult result = vkQueuePresentKHR(mContext.graphicsQueue, &presentInfo);
 
 	if (result == VK_SUBOPTIMAL_KHR)
-	{
 		mResizeRequested = true;
-	}
 
 	mFrameNumber++;
+}
+
+void Renderer::beginScene(VkCommandBuffer commandBuffer)
+{
+	// Transition image for clear and compute
+	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+
+	/* Clear image color
+	VkClearColorValue clearColor{ 0.0f, 0.0f, 0.0f, 1.0f };
+	VkImageSubresourceRange imageSubresourceRange = Util::imageSubresourceRange(VK_IMAGE_ASPECT_COLOR_BIT);
+
+	vkCmdClearColorImage(commandBuffer, mImage.handle, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &imageSubresourceRange); */
+
+	// Push constants and draw compute gradient grid 
+	VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
+	VkPipelineLayout computeLayout = mPipeline.mComputePipelineLayout;
+
+	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mComputePipeline);
+	vkCmdBindDescriptorSets(commandBuffer, bindPoint, computeLayout, 0, 1, &mPipeline.mDescriptorSet, 0, NULL);
+	vkCmdPushConstants(commandBuffer, computeLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &mComputeEffect);
+	vkCmdDispatch(commandBuffer, (uint32_t)std::ceil(mExtent.width / 16.0), (uint32_t)std::ceil(mExtent.height / 16.0), 1);
+
+	// Transition image for rendering
+	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	Util::cmdTransitionImage(commandBuffer, mDepthImage.handle, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+
+	// Color attachment
+	VkRenderingAttachmentInfo colorAttachmentInfo{};
+	colorAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+	colorAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colorAttachmentInfo.imageView = mRenderImage.view;
+	colorAttachmentInfo.clearValue.color = { 0.0f, 0.0f, 0.0f, 0.5f };
+
+	// Depth attachment
+	VkRenderingAttachmentInfo depthAttachmentInfo{};
+	depthAttachmentInfo.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+	depthAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+	depthAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	depthAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	depthAttachmentInfo.imageView = mDepthImage.view;
+	depthAttachmentInfo.clearValue.depthStencil.depth = 1.0f;
+
+	// Begin rendering
+	VkRenderingInfo renderingInfo{};
+	renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+	renderingInfo.renderArea.extent = { mExtent.width, mExtent.height };
+	renderingInfo.pColorAttachments = &colorAttachmentInfo;
+	renderingInfo.pDepthAttachment = &depthAttachmentInfo;
+	renderingInfo.colorAttachmentCount = 1;
+	renderingInfo.layerCount = 1;
+
+	vkCmdBeginRendering(commandBuffer, &renderingInfo);
+}
+
+void Renderer::endScene(VkCommandBuffer commandBuffer)
+{
+	// End rendering
+	vkCmdEndRendering(commandBuffer);
+
+	// Transition image for copy
+	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+	// Copy image to swapchain image
+	VkImage swapchainImage = mContext.swapchainImages[mSwapchainImageIndex];
+
+	Util::cmdTransitionImage(commandBuffer, swapchainImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	Util::cmdCopyImageToImage(commandBuffer, mRenderImage.handle, swapchainImage, { mExtent.width, mExtent.height }, { mContext.swapchainExtent.width, mContext.swapchainExtent.height });
+	Util::cmdTransitionImage(commandBuffer, swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 }
 
 void Renderer::renderScene(VkCommandBuffer commandBuffer, Scene& scene)
