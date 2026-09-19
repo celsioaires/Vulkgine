@@ -2,7 +2,7 @@
 
 #include <cmath>
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 #include <vulkan/vulkan.h>
 #include <glm/gtc/matrix_transform.hpp>
 

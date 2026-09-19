@@ -93,14 +93,14 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\glm-1.0.3\glm;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\VulkanMemoryAllocator-3.4.0\include;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;$(SolutionDir)Vendor\SDL2-2.32.10\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Vendor\SDL2-2.32.10\lib\$(Platform)\;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;SDL2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -115,14 +115,14 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\glm-1.0.3\glm;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\VulkanMemoryAllocator-3.4.0\include;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;$(SolutionDir)Vendor\SDL2-2.32.10\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Vendor\SDL2-2.32.10\lib\$(Platform)\;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -135,14 +135,14 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\glm-1.0.3\glm;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\VulkanMemoryAllocator-3.4.0\include;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;$(SolutionDir)Vendor\SDL2-2.32.10\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Vendor\SDL2-2.32.10\lib\$(Platform)\;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;SDL2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -157,14 +157,14 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\glm-1.0.3\glm;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\VulkanMemoryAllocator-3.4.0\include;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;$(SolutionDir)Vendor\SDL2-2.32.10\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)Vendor\SDL2-2.32.10\lib\$(Platform)\;C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SDL2.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\VulkanSDK\1.4.357.0\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>vulkan-1.lib;SDL2.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableSegmentHeap>true</EnableSegmentHeap>
@@ -201,7 +201,6 @@
     <ClCompile Include="Vendor\imgui-1.92.9\imgui_widgets.cpp" />
     <ClCompile Include="Vendor\simdjson\simdjson.cpp" />
     <ClCompile Include="Vendor\vk-bootstrap-1.4.360\src\VkBootstrap.cpp" />
-    <ClCompile Include="Vendor\VulkanMemoryAllocator-3.4.0\src\VmaUsage.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Engine\Asset\MeshAsset.h" />

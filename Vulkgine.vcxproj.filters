@@ -42,9 +42,6 @@
     <ClCompile Include="Source\Engine\Render\Context.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Vendor\VulkanMemoryAllocator-3.4.0\src\VmaUsage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Engine\Render\Context.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

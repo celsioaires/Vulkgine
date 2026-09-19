@@ -1,7 +1,7 @@
 #include "Mesh.h"
 
 #include <vulkan/vulkan.h>
-#include <vk_mem_alloc.h>
+#include <vma/vk_mem_alloc.h>
 
 #include "Renderer.h"
 #include "Util.h"

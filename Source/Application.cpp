@@ -1,6 +1,6 @@
 #include "Application.h"
 
-#include <SDL.h>
+#include <SDL2/SDL.h>
 
 void Application::initializeWindow()
 {

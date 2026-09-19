@@ -1,10 +1,11 @@
 #include "Context.h"
 
 #include <fmt/core.h>
-#include <SDL_assert.h>
-#include <SDL_vulkan.h>
+#include <SDL2/SDL_assert.h>
+#include <SDL2/SDL_vulkan.h>
 #include <VkBootstrap.h>
-#include <vk_mem_alloc.h>
+#define VMA_IMPLEMENTATION
+#include <vma/vk_mem_alloc.h>
 
 #include "Util.h"
 
