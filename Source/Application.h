@@ -1,11 +1,7 @@
 #pragma once
 
-#include <cstddef>
-
 #include "Engine/Core/Window.h"
 #include "Engine/Core/Event.h"
-
-typedef union SDL_Event SDL_Event;
 
 class Application
 {
@@ -21,8 +17,8 @@ public:
 	void showWindow();
 	bool pollEvents(Event& event);
 
+	// Getters
 	bool isOpen() { return !mQuit; }
 	bool isMinimized() { return mMinimized; }
-
 	Window getWindow() const { return mWindow; }
 };

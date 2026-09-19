@@ -27,12 +27,14 @@ struct Context
 	VkCommandBuffer mImmediateCommandBuffer = NULL;
 	VkFence mImmediateFence = NULL;
 
+	// Initialize
 	void initializeDevice(SDL_Window* window);
 	void initializeAllocator();
 	void initializeSwapchain(uint32_t width, uint32_t height);
 	void initializeCommands();
 	void initializeSyncronization();
 
+	// Cleanup
 	void cleanupInitialized();
 	void cleanupSwapchain();
 };

@@ -34,19 +34,21 @@ void Renderer::cleanupInitialized()
 
 void Renderer::resizeSwapchain()
 {
-	int width = 0;
-	int height = 0;
+	int width = 0, height = 0;
 
+	// Window size
 	SDL_GetWindowSize(mContext.mWindow, &width, &height);
 
 	waitForRender();
 
-	// Resizing
+	// Cleanup resources
 	mContext.cleanupSwapchain();
+
+	// Initialize resources
 	mContext.initializeSwapchain(width, height);
 	mPipeline.updateDescriptors(mContext.renderImage.view);
 
-	mResizeRequested = false;
+	mResizeRequested = false; // Next resize
 }
 
 VkCommandBuffer Renderer::beginRender()
@@ -56,8 +58,8 @@ VkCommandBuffer Renderer::beginRender()
 	// Extent
 	mRenderImage = mContext.renderImage;
 
-	mExtent.width = std::min(mContext.swapchainExtent.width, mRenderImage.extent.width) * mRenderScale;
-	mExtent.height = std::min(mContext.swapchainExtent.height, mRenderImage.extent.height) * mRenderScale;
+	mExtent.width = (uint32_t)(std::min(mContext.swapchainExtent.width, mRenderImage.extent.width) * mRenderScale);
+	mExtent.height = (uint32_t)(std::min(mContext.swapchainExtent.height, mRenderImage.extent.height) * mRenderScale);
 
 	// Frame 
 	mFrame = mContext.frames[mFrameNumber % FRAME_OVERLAP];
@@ -74,9 +76,19 @@ VkCommandBuffer Renderer::beginRender()
 	VK_ASSERT(vkWaitForFences(device, 1, &frameFence, true, 1000000000));
 
 	VkResult result = vkAcquireNextImageKHR(device, mContext.swapchain, 1000000000, mFrame.acquireSemaphore, NULL, &mSwapchainImageIndex);
-
-	if (result == VK_SUBOPTIMAL_KHR)
+	
+	// Handle result
+	switch (result)
+	{
+	case VK_SUCCESS:
+		break;
+	case VK_SUBOPTIMAL_KHR:
 		mResizeRequested = true;
+		break;
+	default:
+		VK_ASSERT(result);
+		break;
+	}
 
 	// Begin buffer
 	VK_ASSERT(vkResetFences(device, 1, &frameFence));
@@ -88,16 +100,18 @@ VkCommandBuffer Renderer::beginRender()
 
 void Renderer::endRender()
 {
+	// Buffer info
 	VkCommandBuffer commandBuffer = mFrame.commandBuffer;
 
-	// Submit info
 	VkCommandBufferSubmitInfo commandBufferInfo{};
 	commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
 	commandBufferInfo.commandBuffer = commandBuffer;
 
+	// Semaphore info
 	VkSemaphoreSubmitInfo waitSemaphoreInfo = Util::semaphoreSubmitInfo(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, mFrame.acquireSemaphore);
 	VkSemaphoreSubmitInfo signalSemaphoreInfo = Util::semaphoreSubmitInfo(VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT, mFrame.submitSemaphore);
 
+	// Submit info
 	VkSubmitInfo2 submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
 	submitInfo.pCommandBufferInfos = &commandBufferInfo;
@@ -125,10 +139,20 @@ void Renderer::endRender()
 	// Present queue
 	VkResult result = vkQueuePresentKHR(mContext.graphicsQueue, &presentInfo);
 
-	if (result == VK_SUBOPTIMAL_KHR)
+	// Handle result
+	switch (result)
+	{
+	case VK_SUCCESS:
+		break;
+	case VK_SUBOPTIMAL_KHR:
 		mResizeRequested = true;
+		break;
+	default:
+		VK_ASSERT(result);
+		break;
+	}
 
-	mFrameNumber++;
+	mFrameNumber++; // Next frame
 }
 
 void Renderer::beginScene(VkCommandBuffer commandBuffer)
@@ -166,18 +190,20 @@ void Renderer::beginScene(VkCommandBuffer commandBuffer)
 	renderingInfo.colorAttachmentCount = 1;
 	renderingInfo.layerCount = 1;
 
-	// Compute commands
+	// Transition command
 	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
+	// Dispatch compute command
 	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mComputePipeline);
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, computeLayout, 0, 1, &mPipeline.mDescriptorSet, 0, NULL);
 	vkCmdPushConstants(commandBuffer, computeLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &mComputeEffect);
 	vkCmdDispatch(commandBuffer, (uint32_t)std::ceil(mExtent.width / 16.0), (uint32_t)std::ceil(mExtent.height / 16.0), 1);
 
-	// Graphics commands
+	// Transition commands
 	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 	Util::cmdTransitionImage(commandBuffer, mDepthImage.handle, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
 
+	// Rendering command
 	vkCmdBeginRendering(commandBuffer, &renderingInfo);
 }
 
@@ -185,29 +211,36 @@ void Renderer::endScene(VkCommandBuffer commandBuffer)
 {
 	VkImage swapchainImage = mContext.swapchainImages[mSwapchainImageIndex];
 
-	// Graphics commands
+	// Rendering command
 	vkCmdEndRendering(commandBuffer);
 
-	// Copy commands
+	// Transition commands
 	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 	Util::cmdTransitionImage(commandBuffer, swapchainImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	
+	// Copy command
 	Util::cmdCopyImageToImage(commandBuffer, mRenderImage.handle, swapchainImage, { mExtent.width, mExtent.height }, { mContext.swapchainExtent.width, mContext.swapchainExtent.height });
+	
+	// Transition command
 	Util::cmdTransitionImage(commandBuffer, swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 }
 
 void Renderer::renderScene(VkCommandBuffer commandBuffer, Scene& scene)
 {
-	// Screen
+	// Viewport
 	VkViewport viewport{};
 	viewport.width = (float)mExtent.width;
 	viewport.height = (float)mExtent.height;
 	viewport.maxDepth = 1.0f;
 
+	// Scissor
 	VkRect2D scissor{};
 	scissor.extent = { mExtent.width, mExtent.height };
 
-	// Camera
+	// View 
 	glm::mat4 view = glm::translate(glm::mat4(1), { 0, 0, -3 });
+
+	// Projection
 	glm::mat4 projection = glm::perspective(glm::radians(70.0f), (float)mExtent.width / (float)mExtent.height, 0.1f, 10000.0f); // TODO: change to near=10000.0f, far=0.1f
 	
 	projection[1][1] *= -1;
@@ -218,11 +251,12 @@ void Renderer::renderScene(VkCommandBuffer commandBuffer, Scene& scene)
 	Mesh mesh = meshAsset.mMesh;
 	Geometry geometry = meshAsset.mGeometries[0];
 
+	// Push constants
 	GraphicsPushConstants pushConstants{};
 	pushConstants.viewProjection = projection * view;
 	pushConstants.mVertexBuffer = mesh.mVertexBuffer.mAddress;
 
-	// Graphics commands
+	// Pipeline commands
 	vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, mPipeline.mGraphicsPipeline);
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);

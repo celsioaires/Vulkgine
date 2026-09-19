@@ -16,6 +16,7 @@ struct Pipeline
 	VkPipeline mGraphicsPipeline = NULL;
 	VkPipelineLayout mGraphicsPipelineLayout = NULL;
 
+	// Initialize
 	void initializeDescriptors(VkDevice device, VkImageView imageView);
 	void initializeShaders();
 	void initializeCompute();

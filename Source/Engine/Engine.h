@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Render/Renderer.h"
-#include "Gui/Gui.h"
-#include "Scene/Scene.h"
 #include "Core/Window.h"
 #include "Core/Event.h"
+#include "Gui/Gui.h"
+#include "Render/Renderer.h"
+#include "Scene/Scene.h"
 
 class Engine
 {

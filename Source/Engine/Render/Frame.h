@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstddef>
-
 #include "Fwd.h"
 
 #define FRAME_OVERLAP 2

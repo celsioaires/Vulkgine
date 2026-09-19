@@ -2,7 +2,7 @@
 
 void Engine::initializeRenderer(Window window)
 {
-	mRenderer.initializeContext(window.pointer, window.width, window.height);
+	mRenderer.initializeContext(window.mPointer, window.mWidth, window.mHeight);
 	mRenderer.initializePipeline();
 }
 

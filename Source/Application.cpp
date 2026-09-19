@@ -4,37 +4,43 @@
 
 void Application::initializeWindow()
 {
+	int position = SDL_WINDOWPOS_CENTERED;
+	
+	Uint32 flags = 
+		SDL_WINDOW_HIDDEN |
+		SDL_WINDOW_RESIZABLE |
+		SDL_WINDOW_VULKAN;
+	
 	SDL_assert(SDL_Init(SDL_INIT_VIDEO) == 0);
 
-	int position = SDL_WINDOWPOS_CENTERED;
-	Uint32 flags = SDL_WINDOW_HIDDEN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN;
-
-	mWindow.pointer = SDL_CreateWindow("Vulkgine", position, position, mWindow.width, mWindow.height, flags);
-	SDL_assert(mWindow.pointer != NULL);
-
+	mWindow.mPointer = SDL_CreateWindow("Vulkgine", position, position, mWindow.mWidth, mWindow.mHeight, flags);
 	mEvent.mPointer = new SDL_Event;
+
+	SDL_assert(mWindow.mPointer);
+	SDL_assert(mEvent.mPointer);
 }
 
 void Application::cleanupInitialized()
 {
 	delete mEvent.mPointer;
 
-	SDL_DestroyWindow(mWindow.pointer);
+	SDL_DestroyWindow(mWindow.mPointer);
 	SDL_Quit();
 }
 
 void Application::showWindow()
 {
-	SDL_ShowWindow(mWindow.pointer);
+	SDL_ShowWindow(mWindow.mPointer);
 }
 
 bool Application::pollEvents(Event& event)
 {
+	// Event loop
 	while (SDL_PollEvent(mEvent.mPointer))
 	{
 		event.mPointer = mEvent.mPointer;
 
-		// Process events
+		// Poll events
 		SDL_Event e = *mEvent.mPointer;
 
 		switch (e.type)

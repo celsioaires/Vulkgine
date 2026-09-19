@@ -21,6 +21,7 @@ private:
 	bool mResizeRequested = false;
 	float mRenderScale = 1.0f;
 public:
+	// Initialize
 	void initializeContext(SDL_Window* window, uint32_t width, uint32_t height);
 	void initializePipeline();
 
@@ -28,14 +29,16 @@ public:
 
 	void resizeSwapchain();
 
+	// Render
 	VkCommandBuffer beginRender();
 	void endRender();
 
+	// Scene
 	void beginScene(VkCommandBuffer commandBuffer);
 	void endScene(VkCommandBuffer commandBuffer);
-
 	void renderScene(VkCommandBuffer commandBuffer, Scene& scene);
-
+	
+	// Immediate
 	VkCommandBuffer beginImmediateRender();
 	void endImmediateRender(VkCommandBuffer commandBuffer);
 

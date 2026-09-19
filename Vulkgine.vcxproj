@@ -196,7 +196,6 @@
     <ClCompile Include="Vendor\imgui-1.92.9\backends\imgui_impl_sdl2.cpp" />
     <ClCompile Include="Vendor\imgui-1.92.9\backends\imgui_impl_vulkan.cpp" />
     <ClCompile Include="Vendor\imgui-1.92.9\imgui.cpp" />
-    <ClCompile Include="Vendor\imgui-1.92.9\imgui_demo.cpp" />
     <ClCompile Include="Vendor\imgui-1.92.9\imgui_draw.cpp" />
     <ClCompile Include="Vendor\imgui-1.92.9\imgui_tables.cpp" />
     <ClCompile Include="Vendor\imgui-1.92.9\imgui_widgets.cpp" />

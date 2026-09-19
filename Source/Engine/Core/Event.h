@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-typedef union SDL_Event SDL_Event;
+union SDL_Event;
 
 struct Event
 {

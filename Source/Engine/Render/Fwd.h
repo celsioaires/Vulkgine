@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
+#include <cassert>
 
 #include <glm/glm.hpp>
 

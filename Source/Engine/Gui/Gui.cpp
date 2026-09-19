@@ -97,7 +97,7 @@ void Gui::drawPanels(ComputeEffect& computeEffect, float& renderScale)
 	mInspector.drawPanel(computeEffect);
 
 	ImGui::Begin("Dynamic resolution");
-	ImGui::SliderFloat("Render scale", &renderScale, 0.3f, 1.f);
+	ImGui::SliderFloat("render scale", &renderScale, 0.3f, 1.f);
 	ImGui::End();
 
 	ImGui::Render();
