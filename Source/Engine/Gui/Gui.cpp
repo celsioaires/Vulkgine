@@ -112,7 +112,7 @@ void Gui::renderPanels(VkCommandBuffer commandBuffer, VkImageView imageView, Ext
 	colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 	colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachmentInfo.imageView = imageView;
-	colorAttachmentInfo.clearValue.color = { 0.0f, 0.0f, 0.0f, 0.0f };
+	colorAttachmentInfo.clearValue.color = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	// Begin rendering
 	VkRenderingInfo renderingInfo{};

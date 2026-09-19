@@ -3,9 +3,8 @@
 #include "Render/Renderer.h"
 #include "Gui/Gui.h"
 #include "Scene/Scene.h"
-
-#include "Window.h"
-#include "Event.h"
+#include "Core/Window.h"
+#include "Core/Event.h"
 
 class Engine
 {

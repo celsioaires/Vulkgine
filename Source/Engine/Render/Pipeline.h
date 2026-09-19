@@ -19,7 +19,7 @@ struct Pipeline
 	void initializeDescriptors(VkDevice device, VkImageView imageView);
 	void initializeShaders();
 	void initializeCompute();
-	void initializeGraphics(VkInstance instance);
+	void initializeGraphics();
 
 	void cleanupInitialized();
 

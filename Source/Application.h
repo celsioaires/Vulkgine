@@ -2,8 +2,8 @@
 
 #include <cstddef>
 
-#include "Engine/Window.h"
-#include "Engine/Event.h"
+#include "Engine/Core/Window.h"
+#include "Engine/Core/Event.h"
 
 typedef union SDL_Event SDL_Event;
 

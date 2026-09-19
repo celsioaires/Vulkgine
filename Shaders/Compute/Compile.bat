@@ -1,1 +1,1 @@
-glslc -fshader-stage=compute Grid.glsl -o Grid.spv
+glslc -fshader-stage=compute Grid.comp.glsl -o Grid.comp.spv

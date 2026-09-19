@@ -1,17 +1,17 @@
 #include "Engine.h"
 
-void Engine::initializeRenderer(Window win)
+void Engine::initializeRenderer(Window window)
 {
-	mRenderer.initializeContext(win.pointer, win.width, win.height);
+	mRenderer.initializeContext(window.pointer, window.width, window.height);
 	mRenderer.initializePipeline();
 }
 
 void Engine::initializeGui()
 {
-	Context ctx = mRenderer.getContext();
+	Context renderingContext = mRenderer.getContext();
 
-	mGui.initializeDescriptors(ctx.mDevice);
-	mGui.initializeContext(ctx.mWindow, ctx.instance, ctx.physicalDevice, ctx.graphicsQueue);
+	mGui.initializeDescriptors(renderingContext.mDevice);
+	mGui.initializeContext(renderingContext.mWindow, renderingContext.instance, renderingContext.physicalDevice, renderingContext.graphicsQueue);
 }
 
 void Engine::initializeScene()
@@ -28,25 +28,27 @@ void Engine::cleanupInitialized()
 	mRenderer.cleanupInitialized();
 }
 
-void Engine::updateGui(Event e)
+void Engine::updateGui(Event event)
 {
-	mGui.updatePanels(e.mPointer);
+	mGui.updatePanels(event.mPointer);
 	mGui.drawPanels(mRenderer.getComputeEffect(), mRenderer.getRenderScale());
 }
 
 void Engine::drawFrame()
 {
+	VkCommandBuffer renderingBuffer = NULL;
+
+	// Resizing
 	if (mRenderer.resizeRequested())
 		mRenderer.resizeSwapchain();
 
-	VkCommandBuffer renderingBuffer = mRenderer.beginRender();
+	// Rendering
+	renderingBuffer = mRenderer.beginRender();
 
-	// Scene
 	mRenderer.beginScene(renderingBuffer);
 	mRenderer.renderScene(renderingBuffer, mScene);
 	mRenderer.endScene(renderingBuffer);
 
-	// Gui
 	mGui.renderPanels(renderingBuffer, mRenderer.getSwapchainView(), mRenderer.getSwapchainExtent());
 
 	mRenderer.endRender();

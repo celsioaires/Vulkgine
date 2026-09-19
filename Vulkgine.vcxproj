@@ -178,7 +178,7 @@
     <ClCompile Include="Source\Engine\Render\Mesh.cpp" />
     <ClCompile Include="Source\Engine\Gui\Inspector.cpp" />
     <ClCompile Include="Source\Engine\Gui\Gui.cpp" />
-    <ClCompile Include="Source\Engine\File.cpp" />
+    <ClCompile Include="Source\Engine\Core\File.cpp" />
     <ClCompile Include="Source\Engine\Render\Pipeline.cpp" />
     <ClCompile Include="Source\Engine\Render\Context.cpp" />
     <ClCompile Include="Source\Engine\Render\Context.h" />
@@ -187,7 +187,7 @@
     <ClCompile Include="Source\Engine\Render\Renderer.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
     <ClCompile Include="source\Application.cpp" />
-    <ClCompile Include="Source\Engine\Window.h" />
+    <ClCompile Include="Source\Engine\Core\Window.h" />
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="Source\Engine\Render\Util.cpp" />
     <ClCompile Include="Vendor\fastgltf\src\base64.cpp" />
@@ -210,9 +210,9 @@
     <ClInclude Include="Source\Engine\Scene\Scene.h" />
     <ClInclude Include="Source\Engine\Render\Mesh.h" />
     <ClInclude Include="Source\Engine\Gui\Inspector.h" />
-    <ClInclude Include="Source\Engine\Event.h" />
+    <ClInclude Include="Source\Engine\Core\Event.h" />
     <ClInclude Include="Source\Engine\Gui\Gui.h" />
-    <ClInclude Include="Source\Engine\File.h" />
+    <ClInclude Include="Source\Engine\Core\File.h" />
     <ClInclude Include="Source\Engine\Render\Pipeline.h" />
     <ClInclude Include="Source\Engine\Render\Fwd.h" />
     <ClInclude Include="Source\Engine\Render\Renderer.h" />

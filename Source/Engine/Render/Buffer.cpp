@@ -34,6 +34,7 @@ void Buffer::initialize(VkDevice device, VmaAllocator allocator, VkBufferUsageFl
 void Buffer::cleanup()
 {
 	vmaDestroyBuffer(mAllocator, mBuffer, mAllocation);
+
 	mBuffer = NULL;
 	mAllocation = NULL;
 

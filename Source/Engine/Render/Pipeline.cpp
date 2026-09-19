@@ -2,38 +2,40 @@
 
 #include <vulkan/vulkan.h>
 
-#include "../File.h"
+#include "../Core/File.h"
 #include "Util.h"
 
 void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 {
 	mDevice = device;
 
-	// Descriptor set layout
+	// Descriptor set layout binding
 	VkDescriptorSetLayoutBinding setLayoutBinding{};
 	setLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	setLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
 	setLayoutBinding.descriptorCount = 1;
 	setLayoutBinding.binding = 0;
 
+	// Descriptor set layout
 	VkDescriptorSetLayoutCreateInfo setLayoutInfo{};
 	setLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	setLayoutInfo.pBindings = &setLayoutBinding;
 	setLayoutInfo.bindingCount = 1;
 
-	VK_ASSERT(vkCreateDescriptorSetLayout(device, &setLayoutInfo, NULL, &mDescriptorSetLayout));
-
-	// Descriptor pool
+	// Descriptor pool size
 	VkDescriptorPoolSize poolSize{};
 	poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	poolSize.descriptorCount = 1;
 
+	// Descriptor pool
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.pPoolSizes = &poolSize;
 	poolInfo.poolSizeCount = 1;
 	poolInfo.maxSets = 1;
 
+	// Create descriptor set layout and pool
+	VK_ASSERT(vkCreateDescriptorSetLayout(device, &setLayoutInfo, NULL, &mDescriptorSetLayout));
 	VK_ASSERT(vkCreateDescriptorPool(device, &poolInfo, NULL, &mDescriptorPool));
 
 	// Descriptor set
@@ -43,6 +45,7 @@ void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 	setInfo.descriptorPool = mDescriptorPool;
 	setInfo.descriptorSetCount = 1;
 
+	// Allocate sets
 	VK_ASSERT(vkAllocateDescriptorSets(device, &setInfo, &mDescriptorSet));
 
 	updateDescriptors(imageView);
@@ -51,23 +54,15 @@ void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 void Pipeline::initializeShaders()
 {
 	std::string exeDirectory = File::getExeDirectory().string();
-
-	// Compute
 	std::string computeDirectory = exeDirectory + "\\Shaders\\Compute\\";
-
-	const char* computeFiles[] =
-	{
-		"Grid.spv"
-	};
-
-	for (const char* file : computeFiles)
-		mComputeShader = Util::createShader(mDevice, (computeDirectory + file).c_str());
-
-	// Graphics
 	std::string graphicsDirectory = exeDirectory + "\\Shaders\\Graphics\\";
 
-	mVertexShader = Util::createShader(mDevice, (graphicsDirectory + "Triangle.vert.spv").c_str());
-	mFragmentShader = Util::createShader(mDevice, (graphicsDirectory + "Triangle.frag.spv").c_str());
+	// Compute
+	mComputeShader = Util::createShader(mDevice, (computeDirectory + "Grid.comp.spv").c_str());
+
+	// Graphics
+	mVertexShader = Util::createShader(mDevice, (graphicsDirectory + "Default.vert.spv").c_str());
+	mFragmentShader = Util::createShader(mDevice, (graphicsDirectory + "Default.frag.spv").c_str());
 }
 void Pipeline::initializeCompute()
 {
@@ -84,8 +79,6 @@ void Pipeline::initializeCompute()
 	computePipelineLayoutInfo.pushConstantRangeCount = 1;
 	computePipelineLayoutInfo.setLayoutCount = 1;
 
-	VK_ASSERT(vkCreatePipelineLayout(mDevice, &computePipelineLayoutInfo, NULL, &mComputePipelineLayout));
-
 	// Stage
 	VkPipelineShaderStageCreateInfo shaderStageInfo{};
 	shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -93,16 +86,20 @@ void Pipeline::initializeCompute()
 	shaderStageInfo.module = mComputeShader;
 	shaderStageInfo.pName = "main";
 
+	// Create layout
+	VK_ASSERT(vkCreatePipelineLayout(mDevice, &computePipelineLayoutInfo, NULL, &mComputePipelineLayout));
+
 	// Pipeline
 	VkComputePipelineCreateInfo computePipelineInfo{};
 	computePipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
 	computePipelineInfo.layout = mComputePipelineLayout;
 	computePipelineInfo.stage = shaderStageInfo;
 
+	// Create pipeline
 	VK_ASSERT(vkCreateComputePipelines(mDevice, NULL, 1, &computePipelineInfo, NULL, &mComputePipeline));
 }
 
-void Pipeline::initializeGraphics(VkInstance instance)
+void Pipeline::initializeGraphics()
 {
 	// Stages
 	VkPipelineShaderStageCreateInfo stages[2]{};
@@ -123,15 +120,13 @@ void Pipeline::initializeGraphics(VkInstance instance)
 
 	stages[1] = stage;
 
-	// States:
-
-	// viewport
+	// Viewport
 	VkPipelineViewportStateCreateInfo viewportState{};
 	viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewportState.viewportCount = 1;
 	viewportState.scissorCount = 1;
 	
-	// blending
+	// Blending
 	VkColorComponentFlags colorComponents =
 		VK_COLOR_COMPONENT_R_BIT |
 		VK_COLOR_COMPONENT_G_BIT |
@@ -146,12 +141,8 @@ void Pipeline::initializeGraphics(VkInstance instance)
 	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 	colorBlendAttachment.colorWriteMask = colorComponents;
 	colorBlendAttachment.blendEnable = true;
-
-	// additive
-	//colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE;
-
-	// alphablend
-	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	//colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE; // additive
+	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;	// alphablend
 
 	VkPipelineColorBlendStateCreateInfo colorBlendState{};
 	colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -159,29 +150,29 @@ void Pipeline::initializeGraphics(VkInstance instance)
 	colorBlendState.pAttachments = &colorBlendAttachment;
 	colorBlendState.attachmentCount = 1;
 
-	// vertex input
+	// Vertex input
 	VkPipelineVertexInputStateCreateInfo vertexInputState{};
 	vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-	// input assembly
+	// Input assembly
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyState{};
 	inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-	// rasterization
+	// Rasterization
 	VkPipelineRasterizationStateCreateInfo rasterizationState{};
 	rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
 	rasterizationState.cullMode = VK_CULL_MODE_NONE;
 	rasterizationState.lineWidth = 1.0f;
 
-	// multisample
+	// Multisample
 	VkPipelineMultisampleStateCreateInfo multisampleState{};
 	multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 	multisampleState.minSampleShading = 1.0f;
 
-	// depth stencil
+	// Depth stencil
 	VkPipelineDepthStencilStateCreateInfo depthStencilState{};
 	depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
@@ -189,7 +180,7 @@ void Pipeline::initializeGraphics(VkInstance instance)
 	depthStencilState.depthTestEnable = true;
 	depthStencilState.maxDepthBounds = 1.0f;
 
-	// dynamic
+	// Dynamic
 	VkDynamicState dynamicStates[] = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 
 	VkPipelineDynamicStateCreateInfo dynamicState{};
@@ -208,16 +199,17 @@ void Pipeline::initializeGraphics(VkInstance instance)
 	graphicsPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
 	graphicsPipelineLayoutInfo.pushConstantRangeCount = 1;
 
-	VK_ASSERT(vkCreatePipelineLayout(mDevice, &graphicsPipelineLayoutInfo, NULL, &mGraphicsPipelineLayout));
-
 	// Rendering 
 	VkFormat colorAttachmentFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
-
+	
 	VkPipelineRenderingCreateInfo pipelineRenderingInfo{};
 	pipelineRenderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 	pipelineRenderingInfo.depthAttachmentFormat = VK_FORMAT_D32_SFLOAT;
 	pipelineRenderingInfo.pColorAttachmentFormats = &colorAttachmentFormat;
 	pipelineRenderingInfo.colorAttachmentCount = 1;
+
+	// Create layout
+	VK_ASSERT(vkCreatePipelineLayout(mDevice, &graphicsPipelineLayoutInfo, NULL, &mGraphicsPipelineLayout));
 
 	// Pipeline
 	VkGraphicsPipelineCreateInfo graphicsPipelineInfo{};
@@ -235,9 +227,10 @@ void Pipeline::initializeGraphics(VkInstance instance)
 	graphicsPipelineInfo.layout = mGraphicsPipelineLayout;
 	graphicsPipelineInfo.stageCount = 2;
 
+	// Create pipeline
 	VK_ASSERT(vkCreateGraphicsPipelines(mDevice, 0, 1, &graphicsPipelineInfo, NULL, &mGraphicsPipeline));
 	
-	PFN_vkSetDebugUtilsObjectNameEXT pfnSetDebugUtilsObjectNameEXT =
+	/* PFN_vkSetDebugUtilsObjectNameEXT pfnSetDebugUtilsObjectNameEXT =
 		(PFN_vkSetDebugUtilsObjectNameEXT)vkGetDeviceProcAddr(mDevice, "vkSetDebugUtilsObjectNameEXT");
 
 	VkDebugUtilsObjectNameInfoEXT nameInfo{};
@@ -246,44 +239,29 @@ void Pipeline::initializeGraphics(VkInstance instance)
 	nameInfo.objectHandle = (uint64_t)mGraphicsPipeline;
 	nameInfo.pObjectName = "Graphics pipeline";
 
-	VK_ASSERT(pfnSetDebugUtilsObjectNameEXT(mDevice, &nameInfo));
+	VK_ASSERT(pfnSetDebugUtilsObjectNameEXT(mDevice, &nameInfo)); */
 }
 
 void Pipeline::cleanupInitialized()
 {
-	// Compute pipeline layout
 	vkDestroyPipelineLayout(mDevice, mGraphicsPipelineLayout, NULL);
-	mGraphicsPipelineLayout = NULL;
-
-	// Compute pipeline
 	vkDestroyPipeline(mDevice, mGraphicsPipeline, NULL);
-	mGraphicsPipeline = NULL;
-
-	// Compute pipeline layout
 	vkDestroyPipelineLayout(mDevice, mComputePipelineLayout, NULL);
-	mComputePipelineLayout = NULL;
-
-	// Compute pipeline
 	vkDestroyPipeline(mDevice, mComputePipeline, NULL);
-	mComputePipeline = NULL;
-
-	// Graphics shaders
 	vkDestroyShaderModule(mDevice, mFragmentShader, NULL);
 	vkDestroyShaderModule(mDevice, mVertexShader, NULL);
+	vkDestroyShaderModule(mDevice, mComputeShader, NULL);
+	vkDestroyDescriptorPool(mDevice, mDescriptorPool, NULL);
+	vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, NULL);
 
+	mGraphicsPipelineLayout = NULL;
+	mGraphicsPipeline = NULL;
+	mComputePipelineLayout = NULL;
+	mComputePipeline = NULL;
 	mFragmentShader = NULL;
 	mVertexShader = NULL;
-
-	// Compute shaders
-	vkDestroyShaderModule(mDevice, mComputeShader, NULL);
 	mComputeShader = NULL;
-
-	// Descriptor pool
-	vkDestroyDescriptorPool(mDevice, mDescriptorPool, NULL);
 	mDescriptorPool = NULL;
-
-	// Descriptor set layout
-	vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, NULL);
 	mDescriptorSetLayout = NULL;
 
 	mDevice = NULL;
@@ -291,11 +269,12 @@ void Pipeline::cleanupInitialized()
 
 void Pipeline::updateDescriptors(VkImageView imageView)
 {
-	// Descriptor set write
+	// Image info
 	VkDescriptorImageInfo descriptorImageInfo{};
 	descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 	descriptorImageInfo.imageView = imageView;
 
+	// Set write
 	VkWriteDescriptorSet descriptorSetWrite{};
 	descriptorSetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	descriptorSetWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
@@ -304,5 +283,6 @@ void Pipeline::updateDescriptors(VkImageView imageView)
 	descriptorSetWrite.descriptorCount = 1;
 	descriptorSetWrite.dstBinding = 0;
 
+	// Update sets
 	vkUpdateDescriptorSets(mDevice, 1, &descriptorSetWrite, 0, NULL);
 }

@@ -33,7 +33,7 @@
     <ClCompile Include="Source\Engine\Render\Frame.h">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\Window.h">
+    <ClCompile Include="Source\Engine\Core\Window.h">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Source\Engine\Render\Util.cpp">
@@ -57,7 +57,7 @@
     <ClCompile Include="Vendor\fmt-12.2.0\src\format.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Engine\File.cpp">
+    <ClCompile Include="Source\Engine\Core\File.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Vendor\imgui-1.92.9\imgui_draw.cpp">
@@ -131,13 +131,13 @@
     <ClInclude Include="Source\Engine\Render\Pipeline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\File.h">
+    <ClInclude Include="Source\Engine\Core\File.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Gui\Gui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Engine\Event.h">
+    <ClInclude Include="Source\Engine\Core\Event.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\Engine\Gui\Inspector.h">

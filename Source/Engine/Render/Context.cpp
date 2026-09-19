@@ -12,13 +12,13 @@ void Context::initializeDevice(SDL_Window* window)
 {
 	mWindow = window;
 
-	// Instance
 #ifdef _DEBUG
 	bool enableValidation = true;
 #else
 	bool enableValidation = false;
 #endif
 
+	// Instance
 	vkb::InstanceBuilder instanceBuilder;
 
 	vkb::Result<vkb::Instance> instanceResult = instanceBuilder
@@ -42,7 +42,7 @@ void Context::initializeDevice(SDL_Window* window)
 	VkPhysicalDeviceVulkan12Features physicalDeviceFeatures12{};
 	physicalDeviceFeatures12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
 	physicalDeviceFeatures12.bufferDeviceAddress = true;
-	// physicalDeviceFeatures12.descriptorIndexing = true;
+	physicalDeviceFeatures12.descriptorIndexing = true;
 
 	VkPhysicalDeviceVulkan13Features physicalDeviceFeatures13{};
 	physicalDeviceFeatures13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
@@ -98,18 +98,21 @@ void Context::initializeAllocator()
 
 void Context::initializeSwapchain(uint32_t width, uint32_t height)
 {
-	// Swapchain
-	vkb::SwapchainBuilder swapchainBuilder(physicalDevice, mDevice, surface);
-
+	// Surface
 	VkSurfaceFormatKHR surfaceFormat{};
 	surfaceFormat.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 	surfaceFormat.format = VK_FORMAT_B8G8R8A8_UNORM;
 
+	// Usages
 	VkImageUsageFlags imageUsages =
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 		VK_IMAGE_USAGE_STORAGE_BIT |
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
+	// Builder
+	vkb::SwapchainBuilder swapchainBuilder(physicalDevice, mDevice, surface);
+
+	// Create swapchain
 	vkb::Result<vkb::Swapchain> swapchainResult = swapchainBuilder
 		.set_desired_format(surfaceFormat)
 		.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
@@ -300,30 +303,25 @@ void Context::cleanupInitialized()
 
 void Context::cleanupSwapchain()
 {
-	// Depth image and view
 	vkDestroyImageView(mDevice, mDepthImage.view, NULL);
-	mDepthImage.view = NULL;
+	vkDestroyImageView(mDevice, renderImage.view, NULL);
 
 	vmaDestroyImage(allocator, mDepthImage.handle, mDepthImage.allocation);
-	mDepthImage.handle = NULL;
-	mDepthImage.allocation = NULL;
-
-	// Render image and view
-	vkDestroyImageView(mDevice, renderImage.view, NULL);
-	renderImage.view = NULL;
-
 	vmaDestroyImage(allocator, renderImage.handle, renderImage.allocation);
-	renderImage.handle = NULL;
-	renderImage.allocation = NULL;
 
-	// Views
 	for (VkImageView view : mSwapchainViews)
 	{
 		vkDestroyImageView(mDevice, view, NULL);
 		view = NULL;
 	}
 
-	// Swapchain
 	vkDestroySwapchainKHR(mDevice, swapchain, NULL);
+
+	mDepthImage.view = NULL;
+	mDepthImage.handle = NULL;
+	mDepthImage.allocation = NULL;
+	renderImage.view = NULL;
+	renderImage.handle = NULL;
+	renderImage.allocation = NULL;
 	swapchain = NULL;
 }
