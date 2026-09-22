@@ -140,67 +140,20 @@ void Context::initializeSwapchain(uint32_t width, uint32_t height)
 	mSwapchainViews = swapchainViewsResult.value();
 
 	// Render image
-	renderImage.format = VK_FORMAT_R16G16B16A16_SFLOAT;
-	renderImage.extent = { width, height, 1 };
-
 	imageUsages =
 		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |
 		VK_IMAGE_USAGE_STORAGE_BIT |
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	VkImageCreateInfo imageInfo{};
-	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.extent = { width, height, 1 };
-	imageInfo.format = renderImage.format;
-	imageInfo.usage = imageUsages;
-	imageInfo.arrayLayers = 1;
-	imageInfo.mipLevels = 1;
-
-	VkMemoryPropertyFlags allocationMemoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-
-	VmaAllocationCreateInfo allocationInfo{};
-	allocationInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-	allocationInfo.requiredFlags = allocationMemoryFlags;
-
-	VK_ASSERT(vmaCreateImage(allocator, &imageInfo, &allocationInfo, &renderImage.handle, &renderImage.allocation, NULL));
-
-	// Render image view
-	VkImageSubresourceRange imageViewSubresource{};
-	imageViewSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	imageViewSubresource.levelCount = 1;
-	imageViewSubresource.layerCount = 1;
-
-	VkImageViewCreateInfo imageViewInfo{};
-	imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-	imageViewInfo.subresourceRange = imageViewSubresource;
-	imageViewInfo.image = renderImage.handle;
-	imageViewInfo.format = renderImage.format;
-
-	VK_ASSERT(vkCreateImageView(mDevice, &imageViewInfo, NULL, &renderImage.view));
+	renderImage.initialize(allocator, VK_FORMAT_R16G16B16A16_SFLOAT, imageUsages, width, height);
+	renderImage.initializeView(mDevice, VK_IMAGE_ASPECT_COLOR_BIT);
 
 	// Depth image
-	mDepthImage.format = VK_FORMAT_D32_SFLOAT;
-	mDepthImage.extent = { width, height, 1 };
-
 	imageUsages = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-	imageInfo.format = mDepthImage.format;
-	imageInfo.usage = imageUsages;
-
-	VK_ASSERT(vmaCreateImage(allocator, &imageInfo, &allocationInfo, &mDepthImage.handle, &mDepthImage.allocation, NULL));
-
-	// Depth image view
-	imageViewSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-	imageViewInfo.subresourceRange = imageViewSubresource;
-	imageViewInfo.image = mDepthImage.handle;
-	imageViewInfo.format = mDepthImage.format;
-
-	VK_ASSERT(vkCreateImageView(mDevice, &imageViewInfo, 0, &mDepthImage.view));
+	mDepthImage.initialize(allocator, VK_FORMAT_D32_SFLOAT, imageUsages, width, height);
+	mDepthImage.initializeView(mDevice, VK_IMAGE_ASPECT_DEPTH_BIT);
 }
 
 void Context::initializeCommands()
@@ -251,7 +204,7 @@ void Context::initializeFrames()
 void Context::cleanupInitialized()
 {
 	// Frame commands and synchronization
-	for (Frame frame : frames)
+	for (Frame& frame : frames)
 		frame.cleanupInitialized();
 
 	mDescriptorLayout.cleanup();
@@ -285,11 +238,8 @@ void Context::cleanupInitialized()
 
 void Context::cleanupSwapchain()
 {
-	vkDestroyImageView(mDevice, mDepthImage.view, 0);
-	vkDestroyImageView(mDevice, renderImage.view, 0);
-
-	vmaDestroyImage(allocator, mDepthImage.handle, mDepthImage.allocation);
-	vmaDestroyImage(allocator, renderImage.handle, renderImage.allocation);
+	renderImage.cleanupInitialized();
+	mDepthImage.cleanupInitialized();
 
 	for (VkImageView& view : mSwapchainViews)
 	{
@@ -299,11 +249,5 @@ void Context::cleanupSwapchain()
 
 	vkDestroySwapchainKHR(mDevice, swapchain, 0);
 
-	mDepthImage.view = 0;
-	mDepthImage.handle = 0;
-	mDepthImage.allocation = 0;
-	renderImage.view = 0;
-	renderImage.handle = 0;
-	renderImage.allocation = 0;
 	swapchain = 0;
 }

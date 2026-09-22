@@ -21,6 +21,7 @@ typedef uint64_t VkDeviceAddress;
 typedef VkFlags VkBufferUsageFlags;
 typedef VkFlags VkImageAspectFlags;
 typedef VkFlags VkShaderStageFlags;
+typedef VkFlags VkImageUsageFlags;
 typedef VkFlags64 VkPipelineStageFlags2;
 
 VK_DEFINE_HANDLE(VkInstance)

@@ -175,6 +175,7 @@
     <ClCompile Include="Source\Engine\Render\Descriptor.cpp" />
     <ClCompile Include="Source\Engine\Asset\Loader.cpp" />
     <ClCompile Include="Source\Engine\Render\Frame.cpp" />
+    <ClCompile Include="Source\Engine\Render\Image.cpp" />
     <ClCompile Include="Source\Engine\Scene\Scene.cpp" />
     <ClCompile Include="Source\Engine\Render\Buffer.cpp" />
     <ClCompile Include="Source\Engine\Render\Buffer.h" />
