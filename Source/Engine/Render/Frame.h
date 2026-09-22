@@ -17,7 +17,7 @@ struct Frame
 	// Initialize
 	void initializeCommands(VkDevice device, uint32_t queueFamilyIndex);
 	void initializeSyncronization();
-	void intializeDescriptors();
+	void intializeDescriptors(VkDescriptorSetLayout setLayout);
 
 	void cleanupInitialized();
 };

@@ -4,6 +4,7 @@
 
 #include "Frame.h"
 #include "Image.h"
+#include "Descriptor.h"
 
 struct Context
 {
@@ -26,6 +27,7 @@ struct Context
 	VkCommandPool mImmediateCommandPool{};
 	VkCommandBuffer mImmediateCommandBuffer{};
 	VkFence mImmediateFence{};
+	DescriptorLayout mDescriptorLayout{};
 
 	// Initialize
 	void initializeDevice(SDL_Window* window);
@@ -33,6 +35,7 @@ struct Context
 	void initializeSwapchain(uint32_t width, uint32_t height);
 	void initializeCommands();
 	void initializeSyncronization();
+	void initializeFrames();
 
 	// Cleanup
 	void cleanupInitialized();

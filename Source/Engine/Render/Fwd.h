@@ -20,6 +20,7 @@ typedef uint64_t VkDeviceAddress;
 
 typedef VkFlags VkBufferUsageFlags;
 typedef VkFlags VkImageAspectFlags;
+typedef VkFlags VkShaderStageFlags;
 typedef VkFlags64 VkPipelineStageFlags2;
 
 VK_DEFINE_HANDLE(VkInstance)
@@ -50,6 +51,7 @@ struct VkSemaphoreSubmitInfo;
 
 enum VkImageLayout;
 enum VkFormat;
+enum VkDescriptorType;
 
 // Vulkan Memory Allocator
 VK_DEFINE_HANDLE(VmaAllocator)

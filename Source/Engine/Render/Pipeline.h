@@ -8,6 +8,7 @@ struct Pipeline
 	/*VkDescriptorPool mDescriptorPool{};
 	VkDescriptorSetLayout mDescriptorSetLayout{};
 	VkDescriptorSet mDescriptorSet{};*/
+	DescriptorLayout mDescriptorLayout{};
 	Descriptor mDescriptor{};
 	VkShaderModule mComputeShader{};
 	VkShaderModule mVertexShader{};
@@ -21,7 +22,7 @@ struct Pipeline
 	void initializeDescriptors(VkDevice device, VkImageView imageView);
 	void initializeShaders();
 	void initializeCompute();
-	void initializeGraphics();
+	void initializeGraphics(VkDescriptorSetLayout setLayout);
 
 	void cleanupInitialized();
 

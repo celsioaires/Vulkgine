@@ -18,7 +18,7 @@ void Buffer::initialize(VkDevice device, VmaAllocator allocator, VkBufferUsageFl
 	allocationInfo.flags = VMA_ALLOCATION_CREATE_MAPPED_BIT;
 	allocationInfo.usage = memoryUsage;
 
-	VK_ASSERT(vmaCreateBuffer(allocator, &bufferInfo, &allocationInfo, &mBuffer, &mAllocation, NULL));
+	VK_ASSERT(vmaCreateBuffer(allocator, &bufferInfo, &allocationInfo, &mBuffer, &mAllocation, 0));
 	
 	if (usage & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)
 	{
@@ -34,9 +34,19 @@ void Buffer::initialize(VkDevice device, VmaAllocator allocator, VkBufferUsageFl
 void Buffer::cleanup()
 {
 	vmaDestroyBuffer(mAllocator, mBuffer, mAllocation);
+	mBuffer = 0;
+	mAllocation = 0;
 
-	mBuffer = NULL;
-	mAllocation = NULL;
+	mAllocator = 0;
+}
 
-	mAllocator = NULL;
+void Buffer::mapData(void* data)
+{
+	void* p = 0;
+
+	VK_ASSERT(vmaMapMemory(mAllocator, mAllocation, &p));
+
+	memcpy(p, data, mSize);
+
+	vmaUnmapMemory(mAllocator, mAllocation);
 }

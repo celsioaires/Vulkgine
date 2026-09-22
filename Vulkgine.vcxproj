@@ -171,6 +171,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Engine\Render\Camera.cpp" />
     <ClCompile Include="Source\Engine\Render\Descriptor.cpp" />
     <ClCompile Include="Source\Engine\Asset\Loader.cpp" />
     <ClCompile Include="Source\Engine\Render\Frame.cpp" />
@@ -205,6 +206,7 @@
     <ClCompile Include="Vendor\vk-bootstrap-1.4.360\src\VkBootstrap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Engine\Render\Camera.h" />
     <ClInclude Include="Source\Engine\Render\Descriptor.h" />
     <ClInclude Include="Source\Engine\Asset\MeshAsset.h" />
     <ClInclude Include="Source\Engine\Asset\Loader.h" />

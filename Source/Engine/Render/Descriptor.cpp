@@ -2,13 +2,40 @@
 
 #include "Util.h"
 
-void Descriptor::initializePool(VkDevice device)
+void DescriptorLayout::initialize(VkDevice device, VkDescriptorType type, VkShaderStageFlags stage)
+{
+	mDevice = device;
+
+	// Binding
+	VkDescriptorSetLayoutBinding layoutBinding{};
+	layoutBinding.descriptorType = type;
+	layoutBinding.stageFlags = stage;
+	layoutBinding.descriptorCount = 1;
+	layoutBinding.binding = 0;
+
+	// Info
+	VkDescriptorSetLayoutCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	createInfo.pBindings = &layoutBinding;
+	createInfo.bindingCount = 1;
+
+	// Create
+	VK_ASSERT(vkCreateDescriptorSetLayout(mDevice, &createInfo, 0, &mHandle));
+}
+
+void DescriptorLayout::cleanup()
+{
+	vkDestroyDescriptorSetLayout(mDevice, mHandle, 0);
+	mHandle = 0;
+}
+
+void Descriptor::initializePool(VkDevice device, VkDescriptorType type)
 {
 	mDevice = device;
 
 	// Size
 	VkDescriptorPoolSize size{};
-	size.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	size.type = type;
 	size.descriptorCount = 1;
 
 	// Info
@@ -22,31 +49,12 @@ void Descriptor::initializePool(VkDevice device)
 	VK_ASSERT(vkCreateDescriptorPool(device, &createInfo, 0, &mPool));
 }
 
-void Descriptor::initializeLayout()
-{
-	// Binding
-	VkDescriptorSetLayoutBinding layoutBinding{};
-	layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	layoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-	layoutBinding.descriptorCount = 1;
-	layoutBinding.binding = 0;
-
-	// Info
-	VkDescriptorSetLayoutCreateInfo createInfo{};
-	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	createInfo.pBindings = &layoutBinding;
-	createInfo.bindingCount = 1;
-
-	// Create
-	VK_ASSERT(vkCreateDescriptorSetLayout(mDevice, &createInfo, 0, &mLayout));
-}
-
-void Descriptor::initializeSet()
+void Descriptor::initializeSet(VkDescriptorSetLayout layout)
 {
 	// Info
 	VkDescriptorSetAllocateInfo allocateInfo{};
 	allocateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocateInfo.pSetLayouts = &mLayout;
+	allocateInfo.pSetLayouts = &layout;
 	allocateInfo.descriptorPool = mPool;
 	allocateInfo.descriptorSetCount = 1;
 
@@ -56,8 +64,8 @@ void Descriptor::initializeSet()
 
 void Descriptor::cleanupInitialized()
 {
-	vkDestroyDescriptorSetLayout(mDevice, mLayout, 0);
 	vkDestroyDescriptorPool(mDevice, mPool, 0);
+	mPool = 0;
 }
 
 void Descriptor::updateSet(VkImageView imageView)
@@ -72,6 +80,26 @@ void Descriptor::updateSet(VkImageView imageView)
 	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	write.pImageInfo = &imageInfo;
+	write.dstSet = mSet;
+	write.descriptorCount = 1;
+	write.dstBinding = 0;
+
+	// Update
+	vkUpdateDescriptorSets(mDevice, 1, &write, 0, 0);
+}
+
+void Descriptor::updateSet(VkBuffer buffer)
+{
+	// Image
+	VkDescriptorBufferInfo bufferInfo{};
+	bufferInfo.buffer = buffer;
+	bufferInfo.range = VK_WHOLE_SIZE;
+
+	// Write
+	VkWriteDescriptorSet write{};
+	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	write.pBufferInfo = &bufferInfo;
 	write.dstSet = mSet;
 	write.descriptorCount = 1;
 	write.dstBinding = 0;

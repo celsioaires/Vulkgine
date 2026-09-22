@@ -3,6 +3,7 @@
 #include "Context.h"
 #include "Frame.h"
 #include "Pipeline.h"
+#include "Camera.h"
 
 class Scene;
 
@@ -20,10 +21,12 @@ private:
 	ComputeEffect mComputeEffect;
 	bool mResizeRequested = false;
 	float mRenderScale = 1.0f;
+	Camera mCamera{};
 public:
 	// Initialize
 	void initializeContext(SDL_Window* window, uint32_t width, uint32_t height);
 	void initializePipeline();
+	void initializeCamera();
 
 	void cleanupInitialized();
 

@@ -4,6 +4,7 @@ void Engine::initializeRenderer(Window window)
 {
 	mRenderer.initializeContext(window.mPointer, window.mWidth, window.mHeight);
 	mRenderer.initializePipeline();
+	mRenderer.initializeCamera();
 }
 
 void Engine::initializeGui()
@@ -36,7 +37,7 @@ void Engine::updateGui(Event event)
 
 void Engine::drawFrame()
 {
-	VkCommandBuffer renderingBuffer = NULL;
+	VkCommandBuffer renderingBuffer = 0;
 
 	// Resizing
 	if (mRenderer.resizeRequested())

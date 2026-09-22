@@ -205,9 +205,6 @@ void Context::initializeSwapchain(uint32_t width, uint32_t height)
 
 void Context::initializeCommands()
 {
-	for (Frame& frame : frames)
-		frame.initializeCommands(mDevice, graphicsQueueIndex);
-
 	// Pool
 	VkCommandPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -230,56 +227,59 @@ void Context::initializeCommands()
 
 void Context::initializeSyncronization()
 {
-	for (Frame& frame : frames)
-		frame.initializeSyncronization();
-
-	// Semaphore
-	VkSemaphoreCreateInfo semaphoreInfo{};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
 	// Fence
 	VkFenceCreateInfo fenceInfo{};
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 	// Create
-	VK_ASSERT(vkCreateFence(mDevice, &fenceInfo, NULL, &mImmediateFence));
+	VK_ASSERT(vkCreateFence(mDevice, &fenceInfo, 0, &mImmediateFence));
+}
+
+void Context::initializeFrames()
+{
+	mDescriptorLayout.initialize(mDevice, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	
+	for (Frame& frame : frames)
+	{
+		frame.initializeCommands(mDevice, graphicsQueueIndex);
+		frame.initializeSyncronization();
+		frame.intializeDescriptors(mDescriptorLayout.mHandle);
+	}
 }
 
 void Context::cleanupInitialized()
 {
-	// Immediate syncronization
-	vkDestroyFence(mDevice, mImmediateFence, NULL);
-
-	// Immediate commands
-	vkDestroyCommandPool(mDevice, mImmediateCommandPool, 0);
-	mImmediateCommandPool = 0;
-
 	// Frame commands and synchronization
 	for (Frame frame : frames)
 		frame.cleanupInitialized();
 
-	// Swapchain
+	mDescriptorLayout.cleanup();
+
+	// Syncronization
+	vkDestroyFence(mDevice, mImmediateFence, 0);
+	mImmediateFence = 0;
+
+	// Commands
+	vkDestroyCommandPool(mDevice, mImmediateCommandPool, 0);
+	mImmediateCommandPool = 0;
+
 	cleanupSwapchain();
 
-	// Allocator
 	vmaDestroyAllocator(allocator);
-	allocator = 0;
 
-	// Device
 	vkDestroyDevice(mDevice, 0);
-	mDevice = 0;
-
-	physicalDevice = 0;
-
 	vkDestroySurfaceKHR(instance, surface, 0);
-	surface = 0;
 
-	// Instance
 	vkb::destroy_debug_utils_messenger(instance, debugMessenger);
-	debugMessenger = 0;
 
 	vkDestroyInstance(instance, 0);
+
+	allocator = 0;
+	mDevice = 0;
+	physicalDevice = 0;
+	surface = 0;
+	debugMessenger = 0;
 	instance = 0;
 }
 
@@ -291,13 +291,13 @@ void Context::cleanupSwapchain()
 	vmaDestroyImage(allocator, mDepthImage.handle, mDepthImage.allocation);
 	vmaDestroyImage(allocator, renderImage.handle, renderImage.allocation);
 
-	for (VkImageView view : mSwapchainViews)
+	for (VkImageView& view : mSwapchainViews)
 	{
-		vkDestroyImageView(mDevice, view, NULL);
+		vkDestroyImageView(mDevice, view, 0);
 		view = 0;
 	}
 
-	vkDestroySwapchainKHR(mDevice, swapchain, NULL);
+	vkDestroySwapchainKHR(mDevice, swapchain, 0);
 
 	mDepthImage.view = 0;
 	mDepthImage.handle = 0;

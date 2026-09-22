@@ -9,50 +9,12 @@ void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 {
 	mDevice = device;
 
-	mDescriptor.initializePool(device);
-	mDescriptor.initializeLayout();
-	mDescriptor.initializeSet();
+	mDescriptorLayout.initialize(device, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT);
+
+	mDescriptor.initializePool(device, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
+	mDescriptor.initializeSet(mDescriptorLayout.mHandle);
 
 	mDescriptor.updateSet(imageView);
-
-	/* Descriptor set layout binding
-	VkDescriptorSetLayoutBinding setLayoutBinding{};
-	setLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	setLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
-	setLayoutBinding.descriptorCount = 1;
-	setLayoutBinding.binding = 0;
-
-	// Descriptor set layout
-	VkDescriptorSetLayoutCreateInfo setLayoutInfo{};
-	setLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	setLayoutInfo.pBindings = &setLayoutBinding;
-	setLayoutInfo.bindingCount = 1;
-
-	// Descriptor pool size
-	VkDescriptorPoolSize poolSize{};
-	poolSize.type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	poolSize.descriptorCount = 1;
-
-	// Descriptor pool
-	VkDescriptorPoolCreateInfo poolInfo{};
-	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolInfo.pPoolSizes = &poolSize;
-	poolInfo.poolSizeCount = 1;
-	poolInfo.maxSets = 1;
-
-	// Create descriptor set layout and pool
-	VK_ASSERT(vkCreateDescriptorSetLayout(device, &setLayoutInfo, 0, &mDescriptorSetLayout));
-	VK_ASSERT(vkCreateDescriptorPool(device, &poolInfo, 0, &mDescriptorPool));
-
-	// Descriptor set
-	VkDescriptorSetAllocateInfo setInfo{};
-	setInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	setInfo.pSetLayouts = &mDescriptorSetLayout;
-	setInfo.descriptorPool = mDescriptorPool;
-	setInfo.descriptorSetCount = 1;
-
-	// Allocate sets
-	VK_ASSERT(vkAllocateDescriptorSets(device, &setInfo, &mDescriptorSet));*/
 }
 
 void Pipeline::initializeShaders()
@@ -79,7 +41,7 @@ void Pipeline::initializeCompute()
 	VkPipelineLayoutCreateInfo computePipelineLayoutInfo{};
 	computePipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	computePipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-	computePipelineLayoutInfo.pSetLayouts = &mDescriptor.mLayout;
+	computePipelineLayoutInfo.pSetLayouts = &mDescriptorLayout.mHandle;
 	computePipelineLayoutInfo.pushConstantRangeCount = 1;
 	computePipelineLayoutInfo.setLayoutCount = 1;
 
@@ -103,7 +65,7 @@ void Pipeline::initializeCompute()
 	VK_ASSERT(vkCreateComputePipelines(mDevice, 0, 1, &computePipelineInfo, 0, &mComputePipeline));
 }
 
-void Pipeline::initializeGraphics()
+void Pipeline::initializeGraphics(VkDescriptorSetLayout setLayout)
 {
 	// Stages
 	VkPipelineShaderStageCreateInfo stages[2]{};
@@ -201,7 +163,9 @@ void Pipeline::initializeGraphics()
 	VkPipelineLayoutCreateInfo graphicsPipelineLayoutInfo{};
 	graphicsPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	graphicsPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
+	graphicsPipelineLayoutInfo.pSetLayouts = &setLayout;
 	graphicsPipelineLayoutInfo.pushConstantRangeCount = 1;
+	graphicsPipelineLayoutInfo.setLayoutCount = 1;
 
 	// Rendering 
 	VkFormat colorAttachmentFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
@@ -255,9 +219,9 @@ void Pipeline::cleanupInitialized()
 	vkDestroyShaderModule(mDevice, mFragmentShader, 0);
 	vkDestroyShaderModule(mDevice, mVertexShader, 0);
 	vkDestroyShaderModule(mDevice, mComputeShader, 0);
-	/*vkDestroyDescriptorPool(mDevice, mDescriptorPool, 0);
-	vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, 0);*/
+
 	mDescriptor.cleanupInitialized();
+	mDescriptorLayout.cleanup();
 
 	mGraphicsPipelineLayout = 0;
 	mGraphicsPipeline = 0;
@@ -266,8 +230,6 @@ void Pipeline::cleanupInitialized()
 	mFragmentShader = 0;
 	mVertexShader = 0;
 	mComputeShader = 0;
-	/*mDescriptorPool = 0;
-	mDescriptorSetLayout = 0;*/
 
 	mDevice = 0;
 }

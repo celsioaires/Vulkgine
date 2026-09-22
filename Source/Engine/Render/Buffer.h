@@ -4,12 +4,14 @@
 
 struct Buffer
 {
-	VmaAllocator mAllocator = NULL;
-	VkBuffer mBuffer = NULL;
-	VmaAllocation mAllocation = NULL;
-	VkDeviceSize mSize = 0;
-	VkDeviceAddress mAddress = 0;
+	VmaAllocator mAllocator{};
+	VkBuffer mBuffer{};
+	VmaAllocation mAllocation{};
+	VkDeviceSize mSize{};
+	VkDeviceAddress mAddress{};
 
 	void initialize(VkDevice device, VmaAllocator allocator, VkBufferUsageFlags usage, VkDeviceSize size, VmaMemoryUsage memoryUsage);
 	void cleanup();
+
+	void mapData(void* data);
 };

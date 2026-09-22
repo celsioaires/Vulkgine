@@ -43,13 +43,16 @@ void Frame::initializeSyncronization()
 	VK_ASSERT(vkCreateFence(mDevice, &fenceInfo, 0, &frameFence));
 }
 
-void Frame::intializeDescriptors()
+void Frame::intializeDescriptors(VkDescriptorSetLayout setLayout)
 {
-
+	mDescriptor.initializePool(mDevice, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+	mDescriptor.initializeSet(setLayout);
 }
 
 void Frame::cleanupInitialized()
 {
+	mDescriptor.cleanupInitialized();
+
 	vkDestroySemaphore(mDevice, acquireSemaphore, 0);
 	vkDestroySemaphore(mDevice, submitSemaphore, 0);
 	vkDestroyFence(mDevice, frameFence, 0);
