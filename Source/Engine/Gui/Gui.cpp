@@ -76,10 +76,10 @@ void Gui::cleanupInitialized()
 	ImGui_ImplSDL2_Shutdown();
 
 	// Descriptors
-	vkDestroyDescriptorPool(mDevice, mDescriptorPool, NULL);
-	mDescriptorPool = NULL;
+	vkDestroyDescriptorPool(mDevice, mDescriptorPool, 0);
+	mDescriptorPool = 0;
 
-	mDevice = NULL;
+	mDevice = 0;
 }
 
 void Gui::updatePanels(SDL_Event* event)
@@ -97,7 +97,7 @@ void Gui::drawPanels(ComputeEffect& computeEffect, float& renderScale)
 	mInspector.drawPanel(computeEffect);
 
 	ImGui::Begin("Dynamic resolution");
-	ImGui::SliderFloat("render scale", &renderScale, 0.3f, 1.f);
+	ImGui::SliderFloat("render scale", &renderScale, 0.250f, 1.0f);
 	ImGui::End();
 
 	ImGui::Render();

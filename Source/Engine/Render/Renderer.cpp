@@ -195,7 +195,7 @@ void Renderer::beginScene(VkCommandBuffer commandBuffer)
 
 	// Dispatch compute command
 	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mComputePipeline);
-	vkCmdBindDescriptorSets(commandBuffer, bindPoint, computeLayout, 0, 1, &mPipeline.mDescriptorSet, 0, NULL);
+	vkCmdBindDescriptorSets(commandBuffer, bindPoint, computeLayout, 0, 1, &mPipeline.mDescriptor.mSet, 0, 0);
 	vkCmdPushConstants(commandBuffer, computeLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &mComputeEffect);
 	vkCmdDispatch(commandBuffer, (uint32_t)std::ceil(mExtent.width / 16.0), (uint32_t)std::ceil(mExtent.height / 16.0), 1);
 

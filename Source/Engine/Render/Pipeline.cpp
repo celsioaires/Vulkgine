@@ -9,7 +9,13 @@ void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 {
 	mDevice = device;
 
-	// Descriptor set layout binding
+	mDescriptor.initializePool(device);
+	mDescriptor.initializeLayout();
+	mDescriptor.initializeSet();
+
+	mDescriptor.updateSet(imageView);
+
+	/* Descriptor set layout binding
 	VkDescriptorSetLayoutBinding setLayoutBinding{};
 	setLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
 	setLayoutBinding.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
@@ -35,8 +41,8 @@ void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 	poolInfo.maxSets = 1;
 
 	// Create descriptor set layout and pool
-	VK_ASSERT(vkCreateDescriptorSetLayout(device, &setLayoutInfo, NULL, &mDescriptorSetLayout));
-	VK_ASSERT(vkCreateDescriptorPool(device, &poolInfo, NULL, &mDescriptorPool));
+	VK_ASSERT(vkCreateDescriptorSetLayout(device, &setLayoutInfo, 0, &mDescriptorSetLayout));
+	VK_ASSERT(vkCreateDescriptorPool(device, &poolInfo, 0, &mDescriptorPool));
 
 	// Descriptor set
 	VkDescriptorSetAllocateInfo setInfo{};
@@ -46,9 +52,7 @@ void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 	setInfo.descriptorSetCount = 1;
 
 	// Allocate sets
-	VK_ASSERT(vkAllocateDescriptorSets(device, &setInfo, &mDescriptorSet));
-
-	updateDescriptors(imageView);
+	VK_ASSERT(vkAllocateDescriptorSets(device, &setInfo, &mDescriptorSet));*/
 }
 
 void Pipeline::initializeShaders()
@@ -75,7 +79,7 @@ void Pipeline::initializeCompute()
 	VkPipelineLayoutCreateInfo computePipelineLayoutInfo{};
 	computePipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	computePipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-	computePipelineLayoutInfo.pSetLayouts = &mDescriptorSetLayout;
+	computePipelineLayoutInfo.pSetLayouts = &mDescriptor.mLayout;
 	computePipelineLayoutInfo.pushConstantRangeCount = 1;
 	computePipelineLayoutInfo.setLayoutCount = 1;
 
@@ -87,7 +91,7 @@ void Pipeline::initializeCompute()
 	shaderStageInfo.pName = "main";
 
 	// Create layout
-	VK_ASSERT(vkCreatePipelineLayout(mDevice, &computePipelineLayoutInfo, NULL, &mComputePipelineLayout));
+	VK_ASSERT(vkCreatePipelineLayout(mDevice, &computePipelineLayoutInfo, 0, &mComputePipelineLayout));
 
 	// Pipeline
 	VkComputePipelineCreateInfo computePipelineInfo{};
@@ -96,7 +100,7 @@ void Pipeline::initializeCompute()
 	computePipelineInfo.stage = shaderStageInfo;
 
 	// Create pipeline
-	VK_ASSERT(vkCreateComputePipelines(mDevice, NULL, 1, &computePipelineInfo, NULL, &mComputePipeline));
+	VK_ASSERT(vkCreateComputePipelines(mDevice, 0, 1, &computePipelineInfo, 0, &mComputePipeline));
 }
 
 void Pipeline::initializeGraphics()
@@ -209,7 +213,7 @@ void Pipeline::initializeGraphics()
 	pipelineRenderingInfo.colorAttachmentCount = 1;
 
 	// Create layout
-	VK_ASSERT(vkCreatePipelineLayout(mDevice, &graphicsPipelineLayoutInfo, NULL, &mGraphicsPipelineLayout));
+	VK_ASSERT(vkCreatePipelineLayout(mDevice, &graphicsPipelineLayoutInfo, 0, &mGraphicsPipelineLayout));
 
 	// Pipeline
 	VkGraphicsPipelineCreateInfo graphicsPipelineInfo{};
@@ -228,7 +232,7 @@ void Pipeline::initializeGraphics()
 	graphicsPipelineInfo.stageCount = 2;
 
 	// Create pipeline
-	VK_ASSERT(vkCreateGraphicsPipelines(mDevice, 0, 1, &graphicsPipelineInfo, NULL, &mGraphicsPipeline));
+	VK_ASSERT(vkCreateGraphicsPipelines(mDevice, 0, 1, &graphicsPipelineInfo, 0, &mGraphicsPipeline));
 	
 	/* PFN_vkSetDebugUtilsObjectNameEXT pfnSetDebugUtilsObjectNameEXT =
 		(PFN_vkSetDebugUtilsObjectNameEXT)vkGetDeviceProcAddr(mDevice, "vkSetDebugUtilsObjectNameEXT");
@@ -244,32 +248,35 @@ void Pipeline::initializeGraphics()
 
 void Pipeline::cleanupInitialized()
 {
-	vkDestroyPipelineLayout(mDevice, mGraphicsPipelineLayout, NULL);
-	vkDestroyPipeline(mDevice, mGraphicsPipeline, NULL);
-	vkDestroyPipelineLayout(mDevice, mComputePipelineLayout, NULL);
-	vkDestroyPipeline(mDevice, mComputePipeline, NULL);
-	vkDestroyShaderModule(mDevice, mFragmentShader, NULL);
-	vkDestroyShaderModule(mDevice, mVertexShader, NULL);
-	vkDestroyShaderModule(mDevice, mComputeShader, NULL);
-	vkDestroyDescriptorPool(mDevice, mDescriptorPool, NULL);
-	vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, NULL);
+	vkDestroyPipelineLayout(mDevice, mGraphicsPipelineLayout, 0);
+	vkDestroyPipeline(mDevice, mGraphicsPipeline, 0);
+	vkDestroyPipelineLayout(mDevice, mComputePipelineLayout, 0);
+	vkDestroyPipeline(mDevice, mComputePipeline, 0);
+	vkDestroyShaderModule(mDevice, mFragmentShader, 0);
+	vkDestroyShaderModule(mDevice, mVertexShader, 0);
+	vkDestroyShaderModule(mDevice, mComputeShader, 0);
+	/*vkDestroyDescriptorPool(mDevice, mDescriptorPool, 0);
+	vkDestroyDescriptorSetLayout(mDevice, mDescriptorSetLayout, 0);*/
+	mDescriptor.cleanupInitialized();
 
-	mGraphicsPipelineLayout = NULL;
-	mGraphicsPipeline = NULL;
-	mComputePipelineLayout = NULL;
-	mComputePipeline = NULL;
-	mFragmentShader = NULL;
-	mVertexShader = NULL;
-	mComputeShader = NULL;
-	mDescriptorPool = NULL;
-	mDescriptorSetLayout = NULL;
+	mGraphicsPipelineLayout = 0;
+	mGraphicsPipeline = 0;
+	mComputePipelineLayout = 0;
+	mComputePipeline = 0;
+	mFragmentShader = 0;
+	mVertexShader = 0;
+	mComputeShader = 0;
+	/*mDescriptorPool = 0;
+	mDescriptorSetLayout = 0;*/
 
-	mDevice = NULL;
+	mDevice = 0;
 }
 
 void Pipeline::updateDescriptors(VkImageView imageView)
 {
-	// Image info
+	mDescriptor.updateSet(imageView);
+
+	/* Image info
 	VkDescriptorImageInfo descriptorImageInfo{};
 	descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 	descriptorImageInfo.imageView = imageView;
@@ -284,5 +291,5 @@ void Pipeline::updateDescriptors(VkImageView imageView)
 	descriptorSetWrite.dstBinding = 0;
 
 	// Update sets
-	vkUpdateDescriptorSets(mDevice, 1, &descriptorSetWrite, 0, NULL);
+	vkUpdateDescriptorSets(mDevice, 1, &descriptorSetWrite, 0, NULL);*/
 }
