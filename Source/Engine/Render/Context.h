@@ -7,25 +7,25 @@
 
 struct Context
 {
-	SDL_Window* mWindow = NULL;
-	VkInstance instance = NULL;
-	VkDebugUtilsMessengerEXT debugMessenger = NULL;
-	VkSurfaceKHR surface = NULL;
-	VkPhysicalDevice physicalDevice = NULL;
-	VkDevice mDevice = NULL;
-	VkQueue graphicsQueue = NULL;
+	SDL_Window* mWindow{};
+	VkInstance instance{};
+	VkDebugUtilsMessengerEXT debugMessenger{};
+	VkSurfaceKHR surface{};
+	VkPhysicalDevice physicalDevice{};
+	VkDevice mDevice{};
+	VkQueue graphicsQueue{};
 	uint32_t graphicsQueueIndex = UINT32_MAX;
-	VmaAllocator allocator = NULL;
-	VkSwapchainKHR swapchain = NULL;
-	Extent2D swapchainExtent{ 0, 0 };
+	VmaAllocator allocator{};
+	VkSwapchainKHR swapchain{};
+	Extent2D swapchainExtent{};
 	std::vector<VkImage> swapchainImages{};
 	std::vector<VkImageView> mSwapchainViews{};
-	Image renderImage;
-	Image mDepthImage;
-	Frame frames[FRAME_OVERLAP];
-	VkCommandPool mImmediateCommandPool = NULL;
-	VkCommandBuffer mImmediateCommandBuffer = NULL;
-	VkFence mImmediateFence = NULL;
+	Image renderImage{};
+	Image mDepthImage{};
+	Frame frames[FRAME_OVERLAP]{};
+	VkCommandPool mImmediateCommandPool{};
+	VkCommandBuffer mImmediateCommandBuffer{};
+	VkFence mImmediateFence{};
 
 	// Initialize
 	void initializeDevice(SDL_Window* window);

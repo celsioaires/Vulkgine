@@ -6,10 +6,18 @@
 
 struct Frame
 {
+	VkDevice mDevice{};
 	VkCommandPool commandPool{};
 	VkCommandBuffer commandBuffer{};
 	VkSemaphore acquireSemaphore{};
 	VkSemaphore submitSemaphore{};
 	VkFence frameFence{};
-	Descriptor mDescriptors{};
+	Descriptor mDescriptor{};
+
+	// Initialize
+	void initializeCommands(VkDevice device, uint32_t queueFamilyIndex);
+	void initializeSyncronization();
+	void intializeDescriptors();
+
+	void cleanupInitialized();
 };
