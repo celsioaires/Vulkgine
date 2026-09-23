@@ -7,11 +7,12 @@
 
 void Mesh::initializeBuffers(Renderer& renderer, std::span<Vertex> vertices, std::span<uint32_t> indices)
 {
-	Context& renderingContext = renderer.getContext();
+	Context& context = renderer.getContext();
 
-	VkDevice device = renderingContext.mDevice;
-	VmaAllocator allocator = renderingContext.allocator;
+	VkDevice device = context.mDevice;
+	VmaAllocator allocator = context.allocator;
 
+	// Vertex
 	VkBufferUsageFlags bufferUsages =
 		VK_BUFFER_USAGE_STORAGE_BUFFER_BIT |
 		VK_BUFFER_USAGE_TRANSFER_DST_BIT |
@@ -21,40 +22,44 @@ void Mesh::initializeBuffers(Renderer& renderer, std::span<Vertex> vertices, std
 
 	mVertexBuffer.initialize(device, allocator, bufferUsages, vertices.size_bytes(), memoryUsage);
 
+	// Index
 	bufferUsages = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
 	mIndexBuffer.initialize(device, allocator, bufferUsages, indices.size_bytes(), memoryUsage);
 
-	// Staging buffer
-	Buffer stagingBuffer;
-	VkDeviceSize stagingBufferSize = mVertexBuffer.mSize + mIndexBuffer.mSize;
+	// Staging
+	Buffer buffer{};
+	VkDeviceSize bufferSize = mVertexBuffer.mSize + mIndexBuffer.mSize;
 
-	stagingBuffer.initialize(device, allocator, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, stagingBufferSize, VMA_MEMORY_USAGE_CPU_ONLY);
+	buffer.initialize(device, allocator, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, bufferSize, VMA_MEMORY_USAGE_CPU_ONLY);
+	
+	// Mapping
+	void* bufferData{};
 
-	void* bufferData = NULL;
-	VK_ASSERT(vmaMapMemory(allocator, stagingBuffer.mAllocation, &bufferData));
+	VK_ASSERT(vmaMapMemory(allocator, buffer.mAllocation, &bufferData));
 
 	memcpy(bufferData, vertices.data(), mVertexBuffer.mSize);
 	memcpy((char*)bufferData + mVertexBuffer.mSize, indices.data(), mIndexBuffer.mSize);
 
-	vmaUnmapMemory(allocator, stagingBuffer.mAllocation);
+	vmaUnmapMemory(allocator, buffer.mAllocation);
 
-	// Copy to staging buffer
+	// Copy
 	VkCommandBuffer commandBuffer = renderer.beginImmediateRender();
 
 	VkBufferCopy bufferCopy{};
 	bufferCopy.size = mVertexBuffer.mSize;
 
-	vkCmdCopyBuffer(commandBuffer, stagingBuffer.mBuffer, mVertexBuffer.mBuffer, 1, &bufferCopy);
+	vkCmdCopyBuffer(commandBuffer, buffer.mBuffer, mVertexBuffer.mBuffer, 1, &bufferCopy);
 
 	bufferCopy.srcOffset = mVertexBuffer.mSize;
 	bufferCopy.size = mIndexBuffer.mSize;
 
-	vkCmdCopyBuffer(commandBuffer, stagingBuffer.mBuffer, mIndexBuffer.mBuffer, 1, &bufferCopy);
+	vkCmdCopyBuffer(commandBuffer, buffer.mBuffer, mIndexBuffer.mBuffer, 1, &bufferCopy);
 
 	renderer.endImmediateRender(commandBuffer);
 
-	stagingBuffer.cleanup();
+	// Cleanup
+	buffer.cleanup();
 }
 
 void Mesh::cleanupInitialized()

@@ -10,6 +10,6 @@ struct Geometry
 
 struct MeshAsset
 {
-	Mesh mMesh;
+	Mesh mGpuData;
 	std::vector<Geometry> mGeometries;
 };

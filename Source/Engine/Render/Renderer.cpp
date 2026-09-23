@@ -271,7 +271,7 @@ void Renderer::renderScene(VkCommandBuffer commandBuffer, Scene& scene)
 	// Mesh
 	std::vector<MeshAsset> meshAssets = scene.getMeshes();
 	MeshAsset meshAsset = meshAssets[2];
-	Mesh mesh = meshAsset.mMesh;
+	Mesh mesh = meshAsset.mGpuData;
 	Geometry geometry = meshAsset.mGeometries[0];
 
 	// Push constants

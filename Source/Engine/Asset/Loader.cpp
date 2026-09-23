@@ -13,7 +13,7 @@ std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, std::filesystem::p
 
 	if (!data.loadFromFile(path))
 	{
-		fmt::println("Failed to open GLTF: {}", path.string());
+		fmt::println("Failed to open GLTF '{}'", path.string());
 		return meshes;
 	}
 
@@ -76,7 +76,7 @@ std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, std::filesystem::p
 			meshAsset.mGeometries.push_back(geometry);
 		}
 
-		meshAsset.mMesh.initializeBuffers(renderer, vertices, indices);
+		meshAsset.mGpuData.initializeBuffers(renderer, vertices, indices);
 
 		meshes.emplace_back(std::move(meshAsset));
 
@@ -84,4 +84,15 @@ std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, std::filesystem::p
 	}	
 
 	return meshes;
+}
+
+TextureAsset Loader::loadTexture(Renderer& renderer, std::filesystem::path path)
+{
+	TextureAsset asset{};
+
+	uint32_t grey = glm::packUnorm4x8(glm::vec4(0.5f, 0.5f, 0.5f, 1));
+
+	asset.mGpuData.initializeImage(renderer, (void*)&grey, 1, 1);
+
+	return asset;
 }

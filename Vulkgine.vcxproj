@@ -194,6 +194,7 @@
     <ClCompile Include="Source\Engine\Core\Window.h" />
     <ClCompile Include="source\Main.cpp" />
     <ClCompile Include="Source\Engine\Render\Util.cpp" />
+    <ClCompile Include="Source\Engine\Render\Texture.cpp" />
     <ClCompile Include="Vendor\fastgltf\src\base64.cpp" />
     <ClCompile Include="Vendor\fastgltf\src\fastgltf.cpp" />
     <ClCompile Include="Vendor\fmt-12.2.0\src\format.cc" />
@@ -207,6 +208,7 @@
     <ClCompile Include="Vendor\vk-bootstrap-1.4.360\src\VkBootstrap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Engine\Asset\TextureAsset.h" />
     <ClInclude Include="Source\Engine\Render\Camera.h" />
     <ClInclude Include="Source\Engine\Render\Descriptor.h" />
     <ClInclude Include="Source\Engine\Asset\MeshAsset.h" />
@@ -223,6 +225,7 @@
     <ClInclude Include="Source\Engine\Engine.h" />
     <ClInclude Include="source\Application.h" />
     <ClInclude Include="Source\Engine\Render\Util.h" />
+    <ClInclude Include="Source\Engine\Render\Texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

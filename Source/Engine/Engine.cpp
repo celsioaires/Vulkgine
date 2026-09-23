@@ -18,6 +18,7 @@ void Engine::initializeGui()
 void Engine::initializeScene()
 {
 	mScene.initializeMeshes(mRenderer);
+	mScene.initializeTextures(mRenderer);
 }
 
 void Engine::cleanupInitialized()
