@@ -21,5 +21,8 @@ public:
 
 	void updateGui(Event event);
 
+	void beginFrame();
+	void endFrame();
+
 	void drawFrame();
 };

@@ -18,4 +18,5 @@ public:
 
 	// Getters
 	std::vector<MeshAsset> getMeshes() { return mMeshAssets; }
+	std::vector<TextureAsset> getTextures() { return mTextureAssets; }
 };

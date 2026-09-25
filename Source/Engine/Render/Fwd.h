@@ -46,6 +46,7 @@ VK_DEFINE_HANDLE(VkPipelineLayout)
 // non dispatchable
 VK_DEFINE_HANDLE(VkShaderModule)
 VK_DEFINE_HANDLE(VkBuffer)
+VK_DEFINE_HANDLE(VkSampler)
 
 struct VkImageSubresourceRange;
 struct VkSemaphoreSubmitInfo;
@@ -91,4 +92,10 @@ struct GraphicsPushConstants
 {
     glm::mat4 viewProjection = glm::mat4(1);
     VkDeviceAddress mVertexBuffer = 0;
+};
+
+struct DescriptorPoolSize
+{
+    VkDescriptorType mType;
+    uint32_t mDescriptorCount;
 };

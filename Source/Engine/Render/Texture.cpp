@@ -23,7 +23,7 @@ void Texture::initializeImage(Renderer& renderer, void* pixels, uint32_t width, 
 
 	// Staging
 	Buffer buffer{};
-	VkDeviceSize bufferSize = 1.0f * width * height * 4;
+	VkDeviceSize bufferSize = (VkDeviceSize)(1.0f * width * height * 4);
 
 	buffer.initialize(device, allocator, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, bufferSize, VMA_MEMORY_USAGE_CPU_TO_GPU);
 	
@@ -38,6 +38,7 @@ void Texture::initializeImage(Renderer& renderer, void* pixels, uint32_t width, 
 
 	// Copy
 	VkCommandBuffer commandBuffer = renderer.beginImmediateRender();
+
 	VkImage image = mImage.handle;
 
 	Util::cmdTransitionImage(commandBuffer, image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);

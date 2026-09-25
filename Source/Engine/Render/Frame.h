@@ -13,11 +13,13 @@ struct Frame
 	VkSemaphore submitSemaphore{};
 	VkFence frameFence{};
 	Descriptor mDescriptor{};
+	VkDescriptorSet mUboDescriptorSet{};
+	VkDescriptorSet mTextureDescriptorSet{};
 
 	// Initialize
 	void initializeCommands(VkDevice device, uint32_t queueFamilyIndex);
 	void initializeSyncronization();
-	void intializeDescriptors(VkDescriptorSetLayout setLayout);
+	void intializeDescriptors(DescriptorLayout uboLayout, DescriptorLayout textureLayout);
 
 	void cleanupInitialized();
 };

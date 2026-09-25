@@ -90,9 +90,19 @@ TextureAsset Loader::loadTexture(Renderer& renderer, std::filesystem::path path)
 {
 	TextureAsset asset{};
 
-	uint32_t grey = glm::packUnorm4x8(glm::vec4(0.5f, 0.5f, 0.5f, 1));
+	std::array<uint32_t, 16 * 16> pixels{};
 
-	asset.mGpuData.initializeImage(renderer, (void*)&grey, 1, 1);
+	uint32_t blackColor = glm::packUnorm4x8({ 0, 0, 0, 1 });
+	uint32_t magentaColor = glm::packUnorm4x8({ 1, 0, 1, 1 });
+
+	int checkerboardSize = 16;
+
+	// Checkerboard
+	for (int x = 0; x < checkerboardSize; x++)
+		for (int y = 0; y < checkerboardSize; y++)
+			pixels[y * checkerboardSize + x] = ((x % 2) ^ (y % 2)) ? magentaColor : blackColor;
+
+	asset.mGpuData.initializeImage(renderer, (void*)&pixels, checkerboardSize, checkerboardSize);
 
 	return asset;
 }

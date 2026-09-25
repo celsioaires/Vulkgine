@@ -9,12 +9,16 @@ void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 {
 	mDevice = device;
 
-	mDescriptorLayout.initialize(device, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT);
+	std::vector<DescriptorPoolSize> poolSizes
+	{
+		{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }
+	};
 
-	mDescriptor.initializePool(device, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
-	mDescriptor.initializeSet(mDescriptorLayout.mHandle);
-
-	mDescriptor.updateSet(imageView);
+	// Compute
+	mDescriptorLayout.initialize(device, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 2);
+	mDescriptor.initializePool(device, poolSizes);
+	mDescriptorSet = mDescriptor.initializeSet(mDescriptorLayout.mHandle);
+	mDescriptor.updateSet(mDescriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, imageView, 0);
 }
 
 void Pipeline::initializeShaders()
@@ -65,7 +69,7 @@ void Pipeline::initializeCompute()
 	VK_ASSERT(vkCreateComputePipelines(mDevice, 0, 1, &computePipelineInfo, 0, &mComputePipeline));
 }
 
-void Pipeline::initializeGraphics(VkDescriptorSetLayout setLayout)
+void Pipeline::initializeGraphics(std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
 {
 	// Stages
 	VkPipelineShaderStageCreateInfo stages[2]{};
@@ -100,6 +104,8 @@ void Pipeline::initializeGraphics(VkDescriptorSetLayout setLayout)
 		VK_COLOR_COMPONENT_A_BIT;
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE; // additive
+	//colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; // alphablend
 	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
@@ -107,8 +113,6 @@ void Pipeline::initializeGraphics(VkDescriptorSetLayout setLayout)
 	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 	colorBlendAttachment.colorWriteMask = colorComponents;
 	colorBlendAttachment.blendEnable = true;
-	//colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE; // additive
-	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;	// alphablend
 
 	VkPipelineColorBlendStateCreateInfo colorBlendState{};
 	colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -163,9 +167,9 @@ void Pipeline::initializeGraphics(VkDescriptorSetLayout setLayout)
 	VkPipelineLayoutCreateInfo graphicsPipelineLayoutInfo{};
 	graphicsPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	graphicsPipelineLayoutInfo.pPushConstantRanges = &pushConstantRange;
-	graphicsPipelineLayoutInfo.pSetLayouts = &setLayout;
+	graphicsPipelineLayoutInfo.pSetLayouts = descriptorSetLayouts.data();
+	graphicsPipelineLayoutInfo.setLayoutCount = (uint32_t)descriptorSetLayouts.size();
 	graphicsPipelineLayoutInfo.pushConstantRangeCount = 1;
-	graphicsPipelineLayoutInfo.setLayoutCount = 1;
 
 	// Rendering 
 	VkFormat colorAttachmentFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
@@ -210,8 +214,19 @@ void Pipeline::initializeGraphics(VkDescriptorSetLayout setLayout)
 	VK_ASSERT(pfnSetDebugUtilsObjectNameEXT(mDevice, &nameInfo)); */
 }
 
+void Pipeline::initializeSampler()
+{
+	VkSamplerCreateInfo createInfo{};
+	createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	createInfo.magFilter = VK_FILTER_NEAREST;
+	createInfo.minFilter = VK_FILTER_NEAREST;
+
+	VK_ASSERT(vkCreateSampler(mDevice, &createInfo, 0, &mSampler));
+}
+
 void Pipeline::cleanupInitialized()
 {
+	vkDestroySampler(mDevice, mSampler, 0);
 	vkDestroyPipelineLayout(mDevice, mGraphicsPipelineLayout, 0);
 	vkDestroyPipeline(mDevice, mGraphicsPipeline, 0);
 	vkDestroyPipelineLayout(mDevice, mComputePipelineLayout, 0);
@@ -236,22 +251,5 @@ void Pipeline::cleanupInitialized()
 
 void Pipeline::updateDescriptors(VkImageView imageView)
 {
-	mDescriptor.updateSet(imageView);
-
-	/* Image info
-	VkDescriptorImageInfo descriptorImageInfo{};
-	descriptorImageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-	descriptorImageInfo.imageView = imageView;
-
-	// Set write
-	VkWriteDescriptorSet descriptorSetWrite{};
-	descriptorSetWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	descriptorSetWrite.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
-	descriptorSetWrite.pImageInfo = &descriptorImageInfo;
-	descriptorSetWrite.dstSet = mDescriptorSet;
-	descriptorSetWrite.descriptorCount = 1;
-	descriptorSetWrite.dstBinding = 0;
-
-	// Update sets
-	vkUpdateDescriptorSets(mDevice, 1, &descriptorSetWrite, 0, NULL);*/
+	mDescriptor.updateSet(mDescriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, imageView, 0);
 }

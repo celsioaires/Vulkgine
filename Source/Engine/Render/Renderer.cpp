@@ -21,10 +21,17 @@ void Renderer::initializeContext(SDL_Window* window, uint32_t width, uint32_t he
 
 void Renderer::initializePipeline()
 {
+	std::vector<VkDescriptorSetLayout> descriptorSetLayouts
+	{
+		mContext.mUboDescriptorLayout.mHandle,
+		mContext.mTextureDescriptorLayout.mHandle,
+	};
+
 	mPipeline.initializeDescriptors(mContext.mDevice, mContext.renderImage.view);
 	mPipeline.initializeShaders();
 	mPipeline.initializeCompute();
-	mPipeline.initializeGraphics(mContext.mDescriptorLayout.mHandle);
+	mPipeline.initializeGraphics(descriptorSetLayouts);
+	mPipeline.initializeSampler();
 }
 
 void Renderer::initializeCamera()
@@ -202,7 +209,7 @@ void Renderer::beginScene(VkCommandBuffer commandBuffer)
 
 	// Dispatch compute command
 	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mComputePipeline);
-	vkCmdBindDescriptorSets(commandBuffer, bindPoint, computeLayout, 0, 1, &mPipeline.mDescriptor.mSet, 0, 0);
+	vkCmdBindDescriptorSets(commandBuffer, bindPoint, computeLayout, 0, 1, &mPipeline.mDescriptorSet, 0, 0);
 	vkCmdPushConstants(commandBuffer, computeLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &mComputeEffect);
 	vkCmdDispatch(commandBuffer, (uint32_t)std::ceil(mExtent.width / 16.0), (uint32_t)std::ceil(mExtent.height / 16.0), 1);
 
@@ -220,7 +227,7 @@ void Renderer::endScene(VkCommandBuffer commandBuffer)
 
 	// Rendering command
 	vkCmdEndRendering(commandBuffer);
-
+	
 	// Transition commands
 	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
 	Util::cmdTransitionImage(commandBuffer, swapchainImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
@@ -248,42 +255,41 @@ void Renderer::renderScene(VkCommandBuffer commandBuffer, Scene& scene)
 	VkRect2D scissor{};
 	scissor.extent = { mExtent.width, mExtent.height };
 
-	// View 
-	glm::mat4 view = glm::translate(glm::mat4(1), { 0, 0, -3 });
-
-	// Projection
-	glm::mat4 projection = glm::perspective(glm::radians(70.0f), (float)mExtent.width / (float)mExtent.height, 0.1f, 10000.0f); // TODO: change to near=10000.0f, far=0.1f
-	
-	projection[1][1] *= -1;
-
-	// Descriptor
+	// Ubo
 	Mvp& mvp = mCamera.mMvp;
 	Buffer& ubo = mCamera.mUbo;
-	Descriptor& descriptor = mFrame.mDescriptor;
 
-	mvp.mProjection = glm::perspective(glm::radians(70.0f), (float)mExtent.width / (float)mExtent.height, 0.1f, 10000.0f); // TODO: change to near=10000.0f, far=0.1f
+	mvp.mProjection = glm::perspective(glm::radians(70.0f), (float)mExtent.width / mExtent.height, 0.1f, 10000.0f); // TODO: change to near=10000.0f, far=0.1f
 	mvp.mProjection[1][1] *= -1;
 	mvp.mView = glm::translate(glm::mat4(1), { 0, 0, -3 });
-
+	
 	ubo.mapData(&mCamera.mMvp);
-	descriptor.updateSet(ubo.mBuffer);
+
+	// Descriptors
+	Descriptor& frameDescriptor = mFrame.mDescriptor;
+
+	std::vector<TextureAsset> textureAssets = scene.getTextures();
+	TextureAsset textureAsset = textureAssets[0];
+	Texture texture = textureAsset.mGpuData;
+
+	frameDescriptor.updateSet(mFrame.mUboDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo.mBuffer);
+	frameDescriptor.updateSet(mFrame.mTextureDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture.mImage.view, mPipeline.mSampler);
 
 	// Mesh
 	std::vector<MeshAsset> meshAssets = scene.getMeshes();
-	MeshAsset meshAsset = meshAssets[2];
+	MeshAsset meshAsset = meshAssets[0];
 	Mesh mesh = meshAsset.mGpuData;
 	Geometry geometry = meshAsset.mGeometries[0];
 
 	// Push constants
 	GraphicsPushConstants pushConstants{};
-	pushConstants.viewProjection = projection * view;
 	pushConstants.mVertexBuffer = mesh.mVertexBuffer.mAddress;
 
 	// Pipeline commands
 	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mGraphicsPipeline);
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-	vkCmdBindDescriptorSets(commandBuffer, bindPoint, graphicsLayout, 0, 1, &descriptor.mSet, 0, 0);
+	vkCmdBindDescriptorSets(commandBuffer, bindPoint, graphicsLayout, 0, 2, frameDescriptor.mSets.data(), 0, 0);
 
 	// Draw commands
 	vkCmdPushConstants(commandBuffer, mPipeline.mGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GraphicsPushConstants), &pushConstants);

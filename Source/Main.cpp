@@ -1,39 +1,61 @@
 #include "Application.h"
 #include "Engine/Engine.h"
 
-int main()
+static Application sApplication{};
+static Engine sEngine{};
+
+void initializeApplication()
 {
-    // Program initialization
-    Application application;
-    Engine engine;
+    sApplication.initializeWindow();
+}
 
-    // Application initialization
-    application.initializeWindow();
+void initializeEngine()
+{
+    sEngine.initializeRenderer(sApplication.getWindow());
+    sEngine.initializeGui();
+    sEngine.initializeScene();
+}
 
-    // Engine initialization
-    engine.initializeRenderer(application.getWindow());
-    engine.initializeGui();
-    engine.initializeScene();
+void cleanupInitialized()
+{
+    sEngine.cleanupInitialized();
+    sApplication.cleanupInitialized();
+}
 
-    // Program loop
-    application.showWindow();
-    
-    while (application.isOpen())
+void runLoop()
+{
+    sApplication.showWindow();
+
+    // Loop
+    while (sApplication.isOpen())
     {
-        // Event loop
         Event event;
 
-        while (application.pollEvents(event))
-            engine.updateGui(event);
+        // Events
+        while (sApplication.pollEvents(event))
+            sEngine.updateGui(event);
 
-        if (application.isMinimized())
+        if (sApplication.isMinimized())
             continue;
 
         // Rendering
-        engine.drawFrame();
+        sEngine.beginFrame();
+        sEngine.drawFrame();
+        sEngine.endFrame();
     }
+}
 
-    // Program cleanup
-    engine.cleanupInitialized();
-    application.cleanupInitialized();
+int main()
+{
+    // Initialization
+    initializeApplication();
+    initializeEngine();
+
+    // Execution
+    runLoop();
+
+    // Cleanup
+    cleanupInitialized();
+
+    return 0;
 }

@@ -191,13 +191,14 @@ void Context::initializeSyncronization()
 
 void Context::initializeFrames()
 {
-	mDescriptorLayout.initialize(mDevice, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+	mUboDescriptorLayout.initialize(mDevice, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+	mTextureDescriptorLayout.initialize(mDevice, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
 	
 	for (Frame& frame : frames)
 	{
 		frame.initializeCommands(mDevice, graphicsQueueIndex);
 		frame.initializeSyncronization();
-		frame.intializeDescriptors(mDescriptorLayout.mHandle);
+		frame.intializeDescriptors(mUboDescriptorLayout, mTextureDescriptorLayout);
 	}
 }
 
@@ -207,7 +208,8 @@ void Context::cleanupInitialized()
 	for (Frame& frame : frames)
 		frame.cleanupInitialized();
 
-	mDescriptorLayout.cleanup();
+	mTextureDescriptorLayout.cleanup();
+	mUboDescriptorLayout.cleanup();
 
 	// Syncronization
 	vkDestroyFence(mDevice, mImmediateFence, 0);
