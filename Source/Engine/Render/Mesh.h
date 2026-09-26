@@ -10,6 +10,8 @@ struct Vertex
 {
     glm::vec3 mPosition;
     float padding;
+    glm::vec2 mUv;
+    glm::vec2 padding2;
 };
 
 struct Mesh

@@ -10,16 +10,16 @@ class Scene;
 class Renderer
 {
 private:
-	Context mContext;
-	Frame mFrame;
-	Image mRenderImage;
-	Image mDepthImage;
-	int mFrameNumber = 0;
+	Context mContext{};
+	Frame mFrame{};
+	Image mRenderImage{};
+	Image mDepthImage{};
+	int mFrameNumber{};
 	uint32_t mSwapchainImageIndex = UINT32_MAX;
-	Extent2D mExtent;
-	Pipeline mPipeline;
-	ComputeEffect mComputeEffect;
-	bool mResizeRequested = false;
+	Extent2D mExtent{};
+	Pipeline mPipeline{};
+	ComputeEffect mComputeEffect{};
+	bool mResizeRequested{};
 	float mRenderScale = 1.0f;
 	Camera mCamera{};
 public:

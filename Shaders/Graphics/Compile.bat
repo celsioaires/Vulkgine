@@ -1,2 +1,5 @@
-glslc -fshader-stage=vertex Default.vert.glsl -o Default.vert.spv
-glslc -fshader-stage=fragment Default.frag.glsl -o Default.frag.spv
+glslc -fshader-stage=vertex Default.vert -o Compiled/Default.vert.spv
+
+glslc -fshader-stage=fragment Default.frag -o Compiled/Default.frag.spv
+
+pause

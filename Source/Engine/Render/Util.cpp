@@ -46,9 +46,9 @@ void Util::cmdCopyImageToImage(VkCommandBuffer commandBuffer, VkImage source, Vk
 	blitRegion.dstSubresource = subresourceLayer;
 	blitRegion.srcOffsets[1].x = srcExtent.width;
 	blitRegion.srcOffsets[1].y = srcExtent.height;
+	blitRegion.srcOffsets[1].z = 1;
 	blitRegion.dstOffsets[1].x = dstExtent.width;
 	blitRegion.dstOffsets[1].y = dstExtent.height;
-	blitRegion.srcOffsets[1].z = 1;
 	blitRegion.dstOffsets[1].z = 1;
 
 	VkBlitImageInfo2 blitInfo{};

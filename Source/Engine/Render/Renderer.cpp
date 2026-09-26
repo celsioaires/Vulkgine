@@ -182,7 +182,6 @@ void Renderer::beginScene(VkCommandBuffer commandBuffer)
 	colorAttachmentInfo.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 	colorAttachmentInfo.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	colorAttachmentInfo.imageView = mRenderImage.view;
-	colorAttachmentInfo.clearValue.color = { 0.0f, 0.0f, 0.0f, 1.0f };
 
 	// Depth attachment
 	mDepthImage = mContext.mDepthImage;
@@ -207,10 +206,12 @@ void Renderer::beginScene(VkCommandBuffer commandBuffer)
 	// Transition command
 	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
 
-	// Dispatch compute command
+	// Pipeline command
 	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mComputePipeline);
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, computeLayout, 0, 1, &mPipeline.mDescriptorSet, 0, 0);
 	vkCmdPushConstants(commandBuffer, computeLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(ComputePushConstants), &mComputeEffect);
+
+	// Dispatch commands
 	vkCmdDispatch(commandBuffer, (uint32_t)std::ceil(mExtent.width / 16.0), (uint32_t)std::ceil(mExtent.height / 16.0), 1);
 
 	// Transition commands
@@ -255,14 +256,15 @@ void Renderer::renderScene(VkCommandBuffer commandBuffer, Scene& scene)
 	VkRect2D scissor{};
 	scissor.extent = { mExtent.width, mExtent.height };
 
-	// Ubo
+	// Camera
 	Mvp& mvp = mCamera.mMvp;
 	Buffer& ubo = mCamera.mUbo;
 
-	mvp.mProjection = glm::perspective(glm::radians(70.0f), (float)mExtent.width / mExtent.height, 0.1f, 10000.0f); // TODO: change to near=10000.0f, far=0.1f
-	mvp.mProjection[1][1] *= -1;
+	mvp.mModel = glm::rotate(glm::mat4(1), glm::radians(SDL_GetTicks() / 10.0f), { 0, 1, 0});
 	mvp.mView = glm::translate(glm::mat4(1), { 0, 0, -3 });
-	
+	mvp.mProjection = glm::perspective(glm::radians(70.0f), (float)mExtent.width / mExtent.height, 0.1f, 10000.0f);
+	mvp.mProjection[1][1] *= -1;
+
 	ubo.mapData(&mCamera.mMvp);
 
 	// Descriptors
@@ -277,7 +279,7 @@ void Renderer::renderScene(VkCommandBuffer commandBuffer, Scene& scene)
 
 	// Mesh
 	std::vector<MeshAsset> meshAssets = scene.getMeshes();
-	MeshAsset meshAsset = meshAssets[0];
+	MeshAsset meshAsset = meshAssets[2];
 	Mesh mesh = meshAsset.mGpuData;
 	Geometry geometry = meshAsset.mGeometries[0];
 
@@ -290,9 +292,9 @@ void Renderer::renderScene(VkCommandBuffer commandBuffer, Scene& scene)
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 	vkCmdBindDescriptorSets(commandBuffer, bindPoint, graphicsLayout, 0, 2, frameDescriptor.mSets.data(), 0, 0);
+	vkCmdPushConstants(commandBuffer, mPipeline.mGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GraphicsPushConstants), &pushConstants);
 
 	// Draw commands
-	vkCmdPushConstants(commandBuffer, mPipeline.mGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GraphicsPushConstants), &pushConstants);
 	vkCmdBindIndexBuffer(commandBuffer, mesh.mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
 	vkCmdDrawIndexed(commandBuffer, geometry.mIndexCount, 1, geometry.mStartIndex, 0, 0);
 }

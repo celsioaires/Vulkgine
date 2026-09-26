@@ -34,6 +34,7 @@ void Pipeline::initializeShaders()
 	mVertexShader = Util::createShader(mDevice, (graphicsDirectory + "Default.vert.spv").c_str());
 	mFragmentShader = Util::createShader(mDevice, (graphicsDirectory + "Default.frag.spv").c_str());
 }
+
 void Pipeline::initializeCompute()
 {
 	// Push constant
@@ -78,16 +79,12 @@ void Pipeline::initializeGraphics(std::vector<VkDescriptorSetLayout> descriptorS
 	stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	stage.pName = "main";
 
-	// vertex
-	stage.stage = VK_SHADER_STAGE_VERTEX_BIT;
+	stage.stage = VK_SHADER_STAGE_VERTEX_BIT; // vertex
 	stage.module = mVertexShader;
-
 	stages[0] = stage;
 
-	// fragment
-	stage.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+	stage.stage = VK_SHADER_STAGE_FRAGMENT_BIT;	// fragment
 	stage.module = mFragmentShader;
-
 	stages[1] = stage;
 
 	// Viewport
@@ -104,11 +101,10 @@ void Pipeline::initializeGraphics(std::vector<VkDescriptorSetLayout> descriptorS
 		VK_COLOR_COMPONENT_A_BIT;
 
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE; // additive
-	//colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA; // alphablend
-	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 	colorBlendAttachment.colorBlendOp = VK_BLEND_OP_ADD;
 	colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;
 	colorBlendAttachment.colorWriteMask = colorComponents;
@@ -133,7 +129,6 @@ void Pipeline::initializeGraphics(std::vector<VkDescriptorSetLayout> descriptorS
 	VkPipelineRasterizationStateCreateInfo rasterizationState{};
 	rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-	rasterizationState.cullMode = VK_CULL_MODE_NONE;
 	rasterizationState.lineWidth = 1.0f;
 
 	// Multisample
