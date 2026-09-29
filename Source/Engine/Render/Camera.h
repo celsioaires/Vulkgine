@@ -6,7 +6,6 @@ class Renderer;
 
 struct Mvp
 {
-	glm::mat4 mModel{};
 	glm::mat4 mView{};
 	glm::mat4 mProjection{};
 };

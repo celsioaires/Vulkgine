@@ -30,6 +30,7 @@ void Application::cleanupInitialized()
 
 void Application::showWindow()
 {
+	SDL_MaximizeWindow(mWindow.mPointer);
 	SDL_ShowWindow(mWindow.mPointer);
 }
 

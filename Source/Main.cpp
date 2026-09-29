@@ -1,37 +1,39 @@
 #include "Application.h"
 #include "Engine/Engine.h"
 
+// Static
+
 static Application sApplication{};
 static Engine sEngine{};
 
-void initializeApplication()
+static void initializeApplication()
 {
     sApplication.initializeWindow();
 }
 
-void initializeEngine()
+static void initializeEngine()
 {
     sEngine.initializeRenderer(sApplication.getWindow());
     sEngine.initializeGui();
     sEngine.initializeScene();
 }
 
-void cleanupInitialized()
+static void cleanupInitialized()
 {
     sEngine.cleanupInitialized();
     sApplication.cleanupInitialized();
 }
 
-void runLoop()
+static void runLoop()
 {
     sApplication.showWindow();
 
     // Loop
     while (sApplication.isOpen())
     {
-        Event event;
-
         // Events
+        Event event{};
+
         while (sApplication.pollEvents(event))
             sEngine.updateGui(event);
 
@@ -39,11 +41,12 @@ void runLoop()
             continue;
 
         // Rendering
-        sEngine.beginFrame();
+        sEngine.prepareFrame();
         sEngine.drawFrame();
-        sEngine.endFrame();
     }
 }
+
+// Main
 
 int main()
 {

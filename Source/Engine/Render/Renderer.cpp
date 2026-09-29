@@ -46,6 +46,11 @@ void Renderer::cleanupInitialized()
 	mContext.cleanupInitialized();
 }
 
+void Renderer::waitForRender()
+{
+	VK_ASSERT(vkDeviceWaitIdle(mContext.mDevice));
+}
+
 void Renderer::resizeSwapchain()
 {
 	int width = 0, height = 0;
@@ -68,12 +73,6 @@ void Renderer::resizeSwapchain()
 VkCommandBuffer Renderer::beginRender()
 {
 	VkDevice device = mContext.mDevice;
-
-	// Extent
-	mRenderImage = mContext.renderImage;
-
-	mExtent.width = (uint32_t)(std::min(mContext.swapchainExtent.width, mRenderImage.extent.width) * mRenderScale);
-	mExtent.height = (uint32_t)(std::min(mContext.swapchainExtent.height, mRenderImage.extent.height) * mRenderScale);
 
 	// Frame 
 	mFrame = mContext.frames[mFrameNumber % FRAME_OVERLAP];
@@ -122,8 +121,11 @@ void Renderer::endRender()
 	commandBufferInfo.commandBuffer = commandBuffer;
 
 	// Semaphore info
-	VkSemaphoreSubmitInfo waitSemaphoreInfo = Util::semaphoreSubmitInfo(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, mFrame.acquireSemaphore);
-	VkSemaphoreSubmitInfo signalSemaphoreInfo = Util::semaphoreSubmitInfo(VK_PIPELINE_STAGE_2_ALL_GRAPHICS_BIT, mFrame.submitSemaphore);
+	VkSemaphoreSubmitInfo
+		waitSemaphoreInfo = 
+			Util::semaphoreSubmitInfo(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR, mFrame.acquireSemaphore),
+		signalSemaphoreInfo = 
+			Util::semaphoreSubmitInfo(VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT, mFrame.submitSemaphore);
 
 	// Submit info
 	VkSubmitInfo2 submitInfo{};
@@ -145,7 +147,10 @@ void Renderer::endRender()
 	presentInfo.waitSemaphoreCount = 1;
 
 	// Submit buffer
-	Util::cmdTransitionImage(commandBuffer, mContext.swapchainImages[mSwapchainImageIndex], VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+	Util::cmdTransitionImage(
+		commandBuffer, mContext.swapchainImages[mSwapchainImageIndex],
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+	);
 
 	VK_ASSERT(vkEndCommandBuffer(commandBuffer));
 	VK_ASSERT(vkQueueSubmit2(mContext.graphicsQueue, 1, &submitInfo, mFrame.frameFence));
@@ -171,6 +176,14 @@ void Renderer::endRender()
 
 void Renderer::beginScene(VkCommandBuffer commandBuffer)
 {
+	// Clear
+	VkClearColorValue clearColor{ { 0.25f, 0.25f, 0.25f, 1.0f } };
+
+	VkImageSubresourceRange clearRange{};
+	clearRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	clearRange.levelCount = 1;
+	clearRange.layerCount = 1;
+
 	// Pipeline
 	VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_COMPUTE;
 	VkPipelineLayout computeLayout = mPipeline.mComputePipelineLayout;
@@ -204,7 +217,19 @@ void Renderer::beginScene(VkCommandBuffer commandBuffer)
 	renderingInfo.layerCount = 1;
 
 	// Transition command
-	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL);
+	Util::cmdTransitionImage(
+		commandBuffer, mRenderImage.handle,
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_GENERAL
+	);
+
+	// Clear command
+	vkCmdClearColorImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_GENERAL, &clearColor, 1, &clearRange);
+
+	// Transition command
+	Util::cmdTransitionImage(
+		commandBuffer, mRenderImage.handle,
+		VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_GENERAL
+	);
 
 	// Pipeline command
 	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mComputePipeline);
@@ -214,9 +239,17 @@ void Renderer::beginScene(VkCommandBuffer commandBuffer)
 	// Dispatch commands
 	vkCmdDispatch(commandBuffer, (uint32_t)std::ceil(mExtent.width / 16.0), (uint32_t)std::ceil(mExtent.height / 16.0), 1);
 
-	// Transition commands
-	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-	Util::cmdTransitionImage(commandBuffer, mDepthImage.handle, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL);
+	// Transition command
+	Util::cmdTransitionImage(
+		commandBuffer, mRenderImage.handle, 
+		VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	);
+
+	// Transition command
+	Util::cmdTransitionImage(
+		commandBuffer, mDepthImage.handle,
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL
+	);
 
 	// Rendering command
 	vkCmdBeginRendering(commandBuffer, &renderingInfo);
@@ -230,17 +263,50 @@ void Renderer::endScene(VkCommandBuffer commandBuffer)
 	vkCmdEndRendering(commandBuffer);
 	
 	// Transition commands
-	Util::cmdTransitionImage(commandBuffer, mRenderImage.handle, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-	Util::cmdTransitionImage(commandBuffer, swapchainImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	Util::cmdTransitionImage(
+		commandBuffer, mRenderImage.handle, 
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
+	);
+	
+	Util::cmdTransitionImage(
+		commandBuffer, swapchainImage, 
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+	);
 	
 	// Copy command
-	Util::cmdCopyImageToImage(commandBuffer, mRenderImage.handle, swapchainImage, { mExtent.width, mExtent.height }, { mContext.swapchainExtent.width, mContext.swapchainExtent.height });
+	Util::cmdCopyImageToImage(
+		commandBuffer, 
+		mRenderImage.handle, swapchainImage, 
+		mExtent, mContext.swapchainExtent
+	);
 	
 	// Transition command
-	Util::cmdTransitionImage(commandBuffer, swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	Util::cmdTransitionImage(
+		commandBuffer, swapchainImage, 
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+	);
 }
 
-void Renderer::renderScene(VkCommandBuffer commandBuffer, Scene& scene)
+void Renderer::updateScene()
+{
+	// Extent
+	mRenderImage = mContext.renderImage;
+
+	mExtent.width = (uint32_t)(std::min(mContext.swapchainExtent.width, mRenderImage.extent.width) * mRenderScale);
+	mExtent.height = (uint32_t)(std::min(mContext.swapchainExtent.height, mRenderImage.extent.height) * mRenderScale);
+
+	// Mvp
+	Mvp& mvp = mCamera.mMvp;
+	Buffer& ubo = mCamera.mUbo;
+
+	mvp.mView = glm::translate(glm::mat4(1), { 0, 0, -3 });
+	mvp.mProjection = glm::perspective(glm::radians(70.0f), (float)mExtent.width / mExtent.height, 0.1f, 10000.0f);
+	mvp.mProjection[1][1] *= -1;
+
+	ubo.mapData(&mCamera.mMvp);
+}
+
+void Renderer::renderRenderables(VkCommandBuffer commandBuffer, Scene& scene)
 {
 	// Pipeline
 	VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -256,47 +322,52 @@ void Renderer::renderScene(VkCommandBuffer commandBuffer, Scene& scene)
 	VkRect2D scissor{};
 	scissor.extent = { mExtent.width, mExtent.height };
 
-	// Camera
-	Mvp& mvp = mCamera.mMvp;
-	Buffer& ubo = mCamera.mUbo;
-
-	mvp.mModel = glm::rotate(glm::mat4(1), glm::radians(SDL_GetTicks() / 10.0f), { 0, 1, 0});
-	mvp.mView = glm::translate(glm::mat4(1), { 0, 0, -3 });
-	mvp.mProjection = glm::perspective(glm::radians(70.0f), (float)mExtent.width / mExtent.height, 0.1f, 10000.0f);
-	mvp.mProjection[1][1] *= -1;
-
-	ubo.mapData(&mCamera.mMvp);
-
-	// Descriptors
-	Descriptor& frameDescriptor = mFrame.mDescriptor;
-
+	// Texture
 	std::vector<TextureAsset> textureAssets = scene.getTextures();
 	TextureAsset textureAsset = textureAssets[0];
 	Texture texture = textureAsset.mGpuData;
 
-	frameDescriptor.updateSet(mFrame.mUboDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, ubo.mBuffer);
+	// Descriptors
+	Descriptor& frameDescriptor = mFrame.mDescriptor;
+
+	frameDescriptor.updateSet(mFrame.mUboDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, mCamera.mUbo.mBuffer);
 	frameDescriptor.updateSet(mFrame.mTextureDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture.mImage.view, mPipeline.mSampler);
-
-	// Mesh
-	std::vector<MeshAsset> meshAssets = scene.getMeshes();
-	MeshAsset meshAsset = meshAssets[2];
-	Mesh mesh = meshAsset.mGpuData;
-	Geometry geometry = meshAsset.mGeometries[0];
-
-	// Push constants
-	GraphicsPushConstants pushConstants{};
-	pushConstants.mVertexBuffer = mesh.mVertexBuffer.mAddress;
 
 	// Pipeline commands
 	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mGraphicsPipeline);
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
-	vkCmdBindDescriptorSets(commandBuffer, bindPoint, graphicsLayout, 0, 2, frameDescriptor.mSets.data(), 0, 0);
-	vkCmdPushConstants(commandBuffer, mPipeline.mGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GraphicsPushConstants), &pushConstants);
 
-	// Draw commands
-	vkCmdBindIndexBuffer(commandBuffer, mesh.mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
-	vkCmdDrawIndexed(commandBuffer, geometry.mIndexCount, 1, geometry.mStartIndex, 0, 0);
+	// Draw renderables
+	for (Renderable& renderable : mRenderables)
+	{
+		Mesh& mesh = renderable.mMesh;
+		Geometry& geometry = renderable.mGeometry;
+
+		// Push constants
+		GraphicsPushConstants pushConstants{};
+		pushConstants.mTransform = renderable.mTransform;
+		pushConstants.mVbo = mesh.mVertexBuffer.mAddress;
+
+		// Pipeline commands
+		vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mGraphicsPipeline);
+		vkCmdBindDescriptorSets(commandBuffer, bindPoint, graphicsLayout, 0, 2, frameDescriptor.mSets.data(), 0, 0);
+		vkCmdPushConstants(commandBuffer, mPipeline.mGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GraphicsPushConstants), &pushConstants);
+
+		// Draw commands
+		vkCmdBindIndexBuffer(commandBuffer, mesh.mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffer, geometry.mIndexCount, 1, geometry.mStartIndex, 0, 0);
+	}
+}
+
+void Renderer::clearRenderables()
+{
+	mRenderables.clear();
+}
+
+void Renderer::submitRenderable(Renderable& renderable)
+{
+	mRenderables.push_back(renderable);
 }
 
 VkCommandBuffer Renderer::beginImmediateRender()
@@ -336,9 +407,4 @@ void Renderer::endImmediateRender(VkCommandBuffer commandBuffer)
 	// Submit buffer
 	VK_ASSERT(vkQueueSubmit2(mContext.graphicsQueue, 1, &submitInfo, fence));
 	VK_ASSERT(vkWaitForFences(mContext.mDevice, 1, &fence, true, 9999999999));
-}
-
-void Renderer::waitForRender()
-{
-	VK_ASSERT(vkDeviceWaitIdle(mContext.mDevice));
 }

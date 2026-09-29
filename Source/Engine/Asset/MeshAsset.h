@@ -1,15 +1,10 @@
 #pragma once
 
 #include "../Render/Mesh.h"
-
-struct Geometry
-{
-	uint32_t mStartIndex;
-	uint32_t mIndexCount;
-};
+#include "../Render/Geometry.h"
 
 struct MeshAsset
 {
-	Mesh mGpuData;
-	std::vector<Geometry> mGeometries;
+	Mesh mGpuData{};
+	std::vector<Geometry> mGeometries{};
 };

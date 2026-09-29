@@ -36,16 +36,15 @@ void Engine::updateGui(Event event)
 	mGui.drawPanels(mRenderer.getComputeEffect(), mRenderer.getRenderScale());
 }
 
-void Engine::beginFrame()
+void Engine::prepareFrame()
 {
 	// Resizing
 	if (mRenderer.resizeRequested())
 		mRenderer.resizeSwapchain();
-}
 
-void Engine::endFrame()
-{
-	mRenderer.endRender();
+	mScene.submitRenderables(mRenderer);
+
+	mRenderer.updateScene();
 }
 
 void Engine::drawFrame()
@@ -54,9 +53,11 @@ void Engine::drawFrame()
 
 	// Scene
 	mRenderer.beginScene(renderingBuffer);
-	mRenderer.renderScene(renderingBuffer, mScene);
+	mRenderer.renderRenderables(renderingBuffer, mScene);
 	mRenderer.endScene(renderingBuffer);
 
 	// Gui
 	mGui.renderPanels(renderingBuffer, mRenderer.getSwapchainView(), mRenderer.getSwapchainExtent());
+
+	mRenderer.endRender();
 }

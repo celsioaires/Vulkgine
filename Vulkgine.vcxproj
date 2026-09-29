@@ -190,9 +190,9 @@
     <ClCompile Include="Source\Engine\Render\Image.h" />
     <ClCompile Include="Source\Engine\Render\Renderer.cpp" />
     <ClCompile Include="Source\Engine\Engine.cpp" />
-    <ClCompile Include="source\Application.cpp" />
+    <ClCompile Include="Source\Application.cpp" />
     <ClCompile Include="Source\Engine\Core\Window.h" />
-    <ClCompile Include="source\Main.cpp" />
+    <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Engine\Render\Util.cpp" />
     <ClCompile Include="Source\Engine\Render\Texture.cpp" />
     <ClCompile Include="Vendor\fastgltf\src\base64.cpp" />
@@ -213,6 +213,10 @@
     <ClInclude Include="Source\Engine\Render\Descriptor.h" />
     <ClInclude Include="Source\Engine\Asset\MeshAsset.h" />
     <ClInclude Include="Source\Engine\Asset\Loader.h" />
+    <ClInclude Include="Source\Engine\Render\Geometry.h" />
+    <ClInclude Include="Source\Engine\Render\Material.h" />
+    <ClInclude Include="Source\Engine\Render\Renderable.h" />
+    <ClInclude Include="Source\Engine\Scene\Node.h" />
     <ClInclude Include="Source\Engine\Scene\Scene.h" />
     <ClInclude Include="Source\Engine\Render\Mesh.h" />
     <ClInclude Include="Source\Engine\Gui\Inspector.h" />
@@ -223,7 +227,7 @@
     <ClInclude Include="Source\Engine\Render\Fwd.h" />
     <ClInclude Include="Source\Engine\Render\Renderer.h" />
     <ClInclude Include="Source\Engine\Engine.h" />
-    <ClInclude Include="source\Application.h" />
+    <ClInclude Include="Source\Application.h" />
     <ClInclude Include="Source\Engine\Render\Util.h" />
     <ClInclude Include="Source\Engine\Render\Texture.h" />
   </ItemGroup>

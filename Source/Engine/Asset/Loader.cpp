@@ -77,7 +77,7 @@ std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, std::filesystem::p
 				}
 			);
 
-			// Vertex uv
+			// Vertex uvs
 			fastgltf::Primitive::attribute_type* uv = primitive.findAttribute("TEXCOORD_0");
 			
 			if (uv != primitive.attributes.end())
@@ -109,9 +109,9 @@ TextureAsset Loader::loadTexture(Renderer& renderer, std::filesystem::path path)
 	uint32_t color0 = glm::packUnorm4x8({ 1, 0.5, 0, 1 });
 	uint32_t color1 = glm::packUnorm4x8({ 1, 1, 0, 1 });
 
+	// Checkerboard
 	int checkerboardSize = 16;
 
-	// Checkerboard
 	for (int x = 0; x < checkerboardSize; x++)
 		for (int y = 0; y < checkerboardSize; y++)
 			pixels[y * checkerboardSize + x] = ((x % 2) ^ (y % 2)) ? color0 : color1;

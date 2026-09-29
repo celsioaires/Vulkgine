@@ -19,8 +19,16 @@ class Util
 {
 public:
 	// Cmd
-	static void cmdTransitionImage(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
-	static void cmdCopyImageToImage(VkCommandBuffer commandBuffer, VkImage source, VkImage destination, Extent2D srcExtent, Extent2D dstExtent);
+	static void cmdTransitionImage(
+		VkCommandBuffer commandBuffer, VkImage image, 
+		VkImageLayout oldLayout, VkImageLayout newLayout
+	);
+	
+	static void cmdCopyImageToImage(
+		VkCommandBuffer commandBuffer,
+		VkImage source, VkImage destination,
+		Extent2D srcExtent, Extent2D dstExtent
+	);
 
 	// Helpers
 	static VkImageSubresourceRange imageSubresourceRange(VkImageAspectFlags aspectMask);

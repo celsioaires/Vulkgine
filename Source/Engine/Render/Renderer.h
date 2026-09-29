@@ -4,6 +4,7 @@
 #include "Frame.h"
 #include "Pipeline.h"
 #include "Camera.h"
+#include "Renderable.h"
 
 class Scene;
 
@@ -20,8 +21,9 @@ private:
 	Pipeline mPipeline{};
 	ComputeEffect mComputeEffect{};
 	bool mResizeRequested{};
-	float mRenderScale = 1.0f;
+	float mRenderScale{ 1.0f };
 	Camera mCamera{};
+	std::vector<Renderable> mRenderables{};
 public:
 	// Initialize
 	void initializeContext(SDL_Window* window, uint32_t width, uint32_t height);
@@ -30,6 +32,7 @@ public:
 
 	void cleanupInitialized();
 
+	void waitForRender();
 	void resizeSwapchain();
 
 	// Render
@@ -39,13 +42,15 @@ public:
 	// Scene
 	void beginScene(VkCommandBuffer commandBuffer);
 	void endScene(VkCommandBuffer commandBuffer);
-	void renderScene(VkCommandBuffer commandBuffer, Scene& scene);
+	void updateScene();
+	void renderRenderables(VkCommandBuffer commandBuffer, Scene& scene);
 	
+	void clearRenderables();
+	void submitRenderable(Renderable& renderable);
+
 	// Immediate
 	VkCommandBuffer beginImmediateRender();
 	void endImmediateRender(VkCommandBuffer commandBuffer);
-
-	void waitForRender();
 
 	// Getters
 	Context& getContext() { return mContext; }

@@ -41,7 +41,10 @@ void Texture::initializeImage(Renderer& renderer, void* pixels, uint32_t width, 
 
 	VkImage image = mImage.handle;
 
-	Util::cmdTransitionImage(commandBuffer, image, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	Util::cmdTransitionImage(
+		commandBuffer, image, 
+		VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+	);
 	
 	VkImageSubresourceLayers subresourceLayers{};
 	subresourceLayers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -53,7 +56,10 @@ void Texture::initializeImage(Renderer& renderer, void* pixels, uint32_t width, 
 
 	vkCmdCopyBufferToImage(commandBuffer, buffer.mBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &bufferCopy);
 
-	Util::cmdTransitionImage(commandBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	Util::cmdTransitionImage(
+		commandBuffer, image, 
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	);
 	
 	renderer.endImmediateRender(commandBuffer);
 

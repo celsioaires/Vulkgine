@@ -64,20 +64,20 @@ enum VmaMemoryUsage;
 // Extent
 struct Extent2D
 {
-    uint32_t width;
-    uint32_t height;
+    uint32_t width{};
+    uint32_t height{};
 };
 
 struct Extent3D
 {
-    uint32_t width;
-    uint32_t height;
-    uint32_t depth;
+    uint32_t width{};
+    uint32_t height{};
+    uint32_t depth{};
 };
 
 struct ComputePushConstants
 {
-    glm::vec4 data1{};
+    glm::vec4 data1{ 1.0, 0.5, 0.0, 1.0 };
     glm::vec4 data2{};
     glm::vec4 data3{};
     glm::vec4 data4{};
@@ -85,17 +85,17 @@ struct ComputePushConstants
 
 struct ComputeEffect
 {
-    ComputePushConstants mPushConstants;
+    ComputePushConstants mPushConstants{};
 };
 
 struct GraphicsPushConstants
 {
-    glm::mat4 viewProjection = glm::mat4(1);
-    VkDeviceAddress mVertexBuffer = 0;
+    glm::mat4 mTransform{};
+    VkDeviceAddress mVbo{};
 };
 
 struct DescriptorPoolSize
 {
-    VkDescriptorType mType;
-    uint32_t mDescriptorCount;
+    VkDescriptorType mType{};
+    uint32_t mDescriptorCount{};
 };

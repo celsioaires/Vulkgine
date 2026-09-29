@@ -33,3 +33,18 @@ void Scene::cleanupInitialized()
 	for (MeshAsset& asset : mMeshAssets)
 		asset.mGpuData.cleanupInitialized();
 }
+
+void Scene::submitRenderables(Renderer& renderer)
+{
+	renderer.clearRenderables();
+
+	for (MeshAsset& meshAsset : mMeshAssets)
+	{
+		Renderable renderable{};
+		renderable.mMesh = meshAsset.mGpuData;
+		renderable.mGeometry = meshAsset.mGeometries[0];
+		//renderable.mTransform = ;
+
+		renderer.submitRenderable(renderable);
+	}
+}

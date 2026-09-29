@@ -16,20 +16,20 @@ layout (buffer_reference, std430) readonly buffer Vbo { Vertex vertices[]; };
 
 layout (push_constant) uniform constants
 {
-	mat4 viewProjection;
+	mat4 transform;
 	Vbo vbo;
 } uPushConstants;
 
 layout (set = 0, binding = 0, std140) uniform Mvp
 {
-    mat4 model, view, projection;
+    mat4 view, projection;
 } uMvp;
 
 void main() 
 {
 	Vertex vertex = uPushConstants.vbo.vertices[gl_VertexIndex];
 
-	gl_Position = uMvp.projection * uMvp.view * uMvp.model * vec4(vertex.position, 1.0);
+	gl_Position = uMvp.projection * uMvp.view * uPushConstants.transform * vec4(vertex.position, 1.0);
 
 	oUv = vertex.uv;
 }
