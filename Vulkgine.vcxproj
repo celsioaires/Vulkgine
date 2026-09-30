@@ -171,6 +171,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Engine\Gui\Hierarchy.cpp" />
     <ClCompile Include="Source\Engine\Render\Camera.cpp" />
     <ClCompile Include="Source\Engine\Render\Descriptor.cpp" />
     <ClCompile Include="Source\Engine\Asset\Loader.cpp" />
@@ -208,6 +209,7 @@
     <ClCompile Include="Vendor\vk-bootstrap-1.4.360\src\VkBootstrap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Engine\Gui\Hierarchy.h" />
     <ClInclude Include="Source\Engine\Asset\TextureAsset.h" />
     <ClInclude Include="Source\Engine\Render\Camera.h" />
     <ClInclude Include="Source\Engine\Render\Descriptor.h" />
@@ -216,6 +218,7 @@
     <ClInclude Include="Source\Engine\Render\Geometry.h" />
     <ClInclude Include="Source\Engine\Render\Material.h" />
     <ClInclude Include="Source\Engine\Render\Renderable.h" />
+    <ClInclude Include="Source\Engine\Scene\MeshNode.h" />
     <ClInclude Include="Source\Engine\Scene\Node.h" />
     <ClInclude Include="Source\Engine\Scene\Scene.h" />
     <ClInclude Include="Source\Engine\Render\Mesh.h" />

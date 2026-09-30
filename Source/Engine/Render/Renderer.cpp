@@ -338,7 +338,7 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer, Scene& scene)
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	// Draw renderables
+	// Iterate renderables
 	for (Renderable& renderable : mRenderables)
 	{
 		Mesh& mesh = renderable.mMesh;

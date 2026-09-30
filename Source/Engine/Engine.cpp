@@ -19,6 +19,7 @@ void Engine::initializeScene()
 {
 	mScene.initializeMeshes(mRenderer);
 	mScene.initializeTextures(mRenderer);
+	mScene.initializeNodes();
 }
 
 void Engine::cleanupInitialized()
@@ -33,7 +34,7 @@ void Engine::cleanupInitialized()
 void Engine::updateGui(Event event)
 {
 	mGui.updatePanels(event.mPointer);
-	mGui.drawPanels(mRenderer.getComputeEffect(), mRenderer.getRenderScale());
+	mGui.drawPanels(mScene.getNodes(), mRenderer.getComputeEffect(), mRenderer.getRenderScale());
 }
 
 void Engine::prepareFrame()
@@ -42,6 +43,7 @@ void Engine::prepareFrame()
 	if (mRenderer.resizeRequested())
 		mRenderer.resizeSwapchain();
 
+	mRenderer.clearRenderables();
 	mScene.submitRenderables(mRenderer);
 
 	mRenderer.updateScene();

@@ -4,6 +4,8 @@
 
 #include "../Asset/Loader.h"
 
+#include "MeshNode.h"
+
 void Scene::initializeMeshes(Renderer& renderer)
 {
 	mMeshAssets = Loader::loadMeshes(renderer, "Assets/Models/basicmesh.glb");
@@ -24,27 +26,50 @@ void Scene::initializeTextures(Renderer& renderer)
 		mTextureAssets.emplace_back(std::move(asset));
 	}
 }
+void Scene::initializeNodes()
+{
+	for (MeshAsset& meshAsset : mMeshAssets)
+	{
+		auto* meshNode = new MeshNode{};
+		meshNode->mAsset = meshAsset;
+
+		mNodes.push_back(meshNode);
+	}
+}
 
 void Scene::cleanupInitialized()
 {
-	for (TextureAsset& asset : mTextureAssets)
-		asset.mGpuData.cleanupInitialized();
+	for (Node* node : mNodes)
+		delete node;
 
-	for (MeshAsset& asset : mMeshAssets)
-		asset.mGpuData.cleanupInitialized();
+	mNodes.clear();
+
+	for (TextureAsset& textureAsset : mTextureAssets)
+		textureAsset.mGpuData.cleanupInitialized();
+
+	for (MeshAsset& meshAsset : mMeshAssets)
+		meshAsset.mGpuData.cleanupInitialized();
 }
 
 void Scene::submitRenderables(Renderer& renderer)
 {
-	renderer.clearRenderables();
-
-	for (MeshAsset& meshAsset : mMeshAssets)
+	for (Node* node : mNodes)
 	{
-		Renderable renderable{};
-		renderable.mMesh = meshAsset.mGpuData;
-		renderable.mGeometry = meshAsset.mGeometries[0];
-		//renderable.mTransform = ;
+		auto* meshNode = dynamic_cast<MeshNode*>(node);
 
-		renderer.submitRenderable(renderable);
+		if (meshNode)
+		{
+			MeshAsset& meshAsset = meshNode->mAsset;
+
+			for (Geometry& meshGeometry : meshAsset.mGeometries)
+			{
+				Renderable renderable{};
+				renderable.mMesh = meshAsset.mGpuData;
+				renderable.mGeometry = meshGeometry;
+				renderable.mTransform = node->mTransform;
+
+				renderer.submitRenderable(renderable);
+			}
+		}
 	}
 }
