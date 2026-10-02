@@ -37,7 +37,7 @@ void Descriptor::initializePool(VkDevice device, std::vector<DescriptorPoolSize>
 
 	std::vector<VkDescriptorPoolSize> vkSizes(sizes.size());
 
-	int i = 0;
+	int i{};
 
 	for (DescriptorPoolSize size : sizes)
 	{
@@ -52,7 +52,7 @@ void Descriptor::initializePool(VkDevice device, std::vector<DescriptorPoolSize>
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	createInfo.pPoolSizes = vkSizes.data();
 	createInfo.poolSizeCount = (uint32_t)sizes.size();
-	createInfo.maxSets = 3;
+	createInfo.maxSets = 1000;
 
 	// Create
 	VK_ASSERT(vkCreateDescriptorPool(device, &createInfo, 0, &mPool));

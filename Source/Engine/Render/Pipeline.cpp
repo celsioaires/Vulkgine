@@ -9,16 +9,27 @@ void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 {
 	mDevice = device;
 
-	std::vector<DescriptorPoolSize> poolSizes
+	std::vector<DescriptorPoolSize> poolSizes{};
+
+	// Compute
+	poolSizes =
 	{
 		{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }
 	};
 
-	// Compute
 	mDescriptorLayout.initialize(device, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 2);
 	mDescriptor.initializePool(device, poolSizes);
 	mDescriptorSet = mDescriptor.initializeSet(mDescriptorLayout.mHandle);
 	mDescriptor.updateSet(mDescriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, imageView, 0);
+
+	// Global
+	poolSizes =
+	{
+		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 }
+	};
+
+	mMaterialDescriptorLayout.initialize(device, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 3);
+	mMaterialDescriptor.initializePool(device, poolSizes);
 }
 
 void Pipeline::initializeShaders()
@@ -70,7 +81,7 @@ void Pipeline::initializeCompute()
 	VK_ASSERT(vkCreateComputePipelines(mDevice, 0, 1, &computePipelineInfo, 0, &mComputePipeline));
 }
 
-void Pipeline::initializeGraphics(std::vector<VkDescriptorSetLayout> descriptorSetLayouts)
+void Pipeline::initializeGraphics(VkDescriptorSetLayout uboDescriptorSetLayout)
 {
 	// Stages
 	VkPipelineShaderStageCreateInfo stages[2]{};
@@ -158,6 +169,13 @@ void Pipeline::initializeGraphics(std::vector<VkDescriptorSetLayout> descriptorS
 	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	pushConstantRange.size = sizeof(GraphicsPushConstants);
 
+	// Set layout
+	std::vector<VkDescriptorSetLayout> descriptorSetLayouts
+	{
+		uboDescriptorSetLayout,
+		mMaterialDescriptorLayout.mHandle
+	};
+
 	// Layout
 	VkPipelineLayoutCreateInfo graphicsPipelineLayoutInfo{};
 	graphicsPipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -213,15 +231,24 @@ void Pipeline::initializeSampler()
 {
 	VkSamplerCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+
+	// Nearest
 	createInfo.magFilter = VK_FILTER_NEAREST;
 	createInfo.minFilter = VK_FILTER_NEAREST;
 
-	VK_ASSERT(vkCreateSampler(mDevice, &createInfo, 0, &mSampler));
+	VK_ASSERT(vkCreateSampler(mDevice, &createInfo, 0, &mNearestSampler));
+
+	// Linear
+	createInfo.magFilter = VK_FILTER_LINEAR;
+	createInfo.minFilter = VK_FILTER_LINEAR;
+
+	VK_ASSERT(vkCreateSampler(mDevice, &createInfo, 0, &mLinearSampler));
 }
 
 void Pipeline::cleanupInitialized()
 {
-	vkDestroySampler(mDevice, mSampler, 0);
+	vkDestroySampler(mDevice, mLinearSampler, 0);
+	vkDestroySampler(mDevice, mNearestSampler, 0);
 	vkDestroyPipelineLayout(mDevice, mGraphicsPipelineLayout, 0);
 	vkDestroyPipeline(mDevice, mGraphicsPipeline, 0);
 	vkDestroyPipelineLayout(mDevice, mComputePipelineLayout, 0);
@@ -230,6 +257,8 @@ void Pipeline::cleanupInitialized()
 	vkDestroyShaderModule(mDevice, mVertexShader, 0);
 	vkDestroyShaderModule(mDevice, mComputeShader, 0);
 
+	mMaterialDescriptor.cleanupInitialized();
+	mMaterialDescriptorLayout.cleanup();
 	mDescriptor.cleanupInitialized();
 	mDescriptorLayout.cleanup();
 

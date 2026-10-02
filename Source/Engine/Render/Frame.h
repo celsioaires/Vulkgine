@@ -14,12 +14,11 @@ struct Frame
 	VkFence frameFence{};
 	Descriptor mDescriptor{};
 	VkDescriptorSet mUboDescriptorSet{};
-	VkDescriptorSet mTextureDescriptorSet{};
 
 	// Initialize
 	void initializeCommands(VkDevice device, uint32_t queueFamilyIndex);
 	void initializeSyncronization();
-	void intializeDescriptors(DescriptorLayout uboLayout, DescriptorLayout textureLayout);
+	void intializeDescriptors(DescriptorLayout uboLayout);
 
 	void cleanupInitialized();
 };

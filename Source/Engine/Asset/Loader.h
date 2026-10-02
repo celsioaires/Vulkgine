@@ -10,5 +10,5 @@ class Renderer;
 struct Loader
 {
 	static std::vector<MeshAsset> loadMeshes(Renderer& renderer, std::filesystem::path path);
-	static TextureAsset loadTexture(Renderer& renderer, std::filesystem::path path);
+	static TextureAsset loadTexture(Renderer& renderer, std::filesystem::path path, int texture);
 };

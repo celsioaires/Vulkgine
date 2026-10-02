@@ -11,26 +11,13 @@ void Scene::initializeMeshes(Renderer& renderer)
 	mMeshAssets = Loader::loadMeshes(renderer, "Assets/Models/basicmesh.glb");
 }
 
-void Scene::initializeTextures(Renderer& renderer)
-{
-	std::string directory = "Assets/Textures/";
-
-	std::string files[]
-	{
-		".jpg"
-	};
-
-	for (std::string file : files)
-	{
-		TextureAsset asset = Loader::loadTexture(renderer, directory + file);
-		mTextureAssets.emplace_back(std::move(asset));
-	}
-}
 void Scene::initializeNodes()
 {
 	for (MeshAsset& meshAsset : mMeshAssets)
 	{
 		auto* meshNode = new MeshNode{};
+
+		meshNode->mName = meshAsset.mName;
 		meshNode->mAsset = meshAsset;
 
 		mNodes.push_back(meshNode);
@@ -44,11 +31,18 @@ void Scene::cleanupInitialized()
 
 	mNodes.clear();
 
-	for (TextureAsset& textureAsset : mTextureAssets)
-		textureAsset.mGpuData.cleanupInitialized();
-
 	for (MeshAsset& meshAsset : mMeshAssets)
+	{
 		meshAsset.mGpuData.cleanupInitialized();
+
+		for (Geometry& meshGeometry : meshAsset.mGeometries)
+		{
+			Material& geometryMaterial = meshGeometry.mMaterial;
+
+			geometryMaterial.mColorTexture.cleanupInitialized();
+			//geometryMaterial.mMetalRoughImage.cleanupInitialized();
+		}
+	}
 }
 
 void Scene::submitRenderables(Renderer& renderer)
@@ -71,5 +65,6 @@ void Scene::submitRenderables(Renderer& renderer)
 				renderer.submitRenderable(renderable);
 			}
 		}
+		// TODO: else if (otherNode)
 	}
 }

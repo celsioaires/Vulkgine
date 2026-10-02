@@ -43,18 +43,16 @@ void Frame::initializeSyncronization()
 	VK_ASSERT(vkCreateFence(mDevice, &fenceInfo, 0, &frameFence));
 }
 
-void Frame::intializeDescriptors(DescriptorLayout uboLayout, DescriptorLayout textureLayout)
+void Frame::intializeDescriptors(DescriptorLayout uboLayout)
 {
 	std::vector<DescriptorPoolSize> poolSizes
 	{
-		{ uboLayout.mType, 1 },
-		{ textureLayout.mType, 1 }
+		{ uboLayout.mType, 1 }
 	};
 
 	mDescriptor.initializePool(mDevice, poolSizes);
 
 	mUboDescriptorSet = mDescriptor.initializeSet(uboLayout.mHandle);
-	mTextureDescriptorSet = mDescriptor.initializeSet(textureLayout.mHandle);
 }
 
 void Frame::cleanupInitialized()

@@ -23,7 +23,7 @@ void Texture::initializeImage(Renderer& renderer, void* pixels, uint32_t width, 
 
 	// Staging
 	Buffer buffer{};
-	VkDeviceSize bufferSize = (VkDeviceSize)(1.0f * width * height * 4);
+	auto bufferSize = (VkDeviceSize)(1.0f * width * height * 4);
 
 	buffer.initialize(device, allocator, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, bufferSize, VMA_MEMORY_USAGE_CPU_TO_GPU);
 	

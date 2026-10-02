@@ -14,8 +14,8 @@ static void initializeApplication()
 static void initializeEngine()
 {
     sEngine.initializeRenderer(sApplication.getWindow());
-    sEngine.initializeGui();
     sEngine.initializeScene();
+    sEngine.initializeGui();
 }
 
 static void cleanupInitialized()

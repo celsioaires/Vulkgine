@@ -6,7 +6,9 @@ struct Pipeline
 {
 	VkDevice mDevice{};
 	DescriptorLayout mDescriptorLayout{};
+	DescriptorLayout mMaterialDescriptorLayout{};
 	Descriptor mDescriptor{};
+	Descriptor mMaterialDescriptor{};
 	VkDescriptorSet mDescriptorSet{};
 	VkShaderModule mComputeShader{};
 	VkShaderModule mVertexShader{};
@@ -15,13 +17,14 @@ struct Pipeline
 	VkPipelineLayout mComputePipelineLayout{};
 	VkPipeline mGraphicsPipeline{};
 	VkPipelineLayout mGraphicsPipelineLayout{};
-	VkSampler mSampler{};
+	VkSampler mNearestSampler{};
+	VkSampler mLinearSampler{};
 
 	// Initialize
 	void initializeDescriptors(VkDevice device, VkImageView imageView);
 	void initializeShaders();
 	void initializeCompute();
-	void initializeGraphics(std::vector<VkDescriptorSetLayout> descriptorSetLayouts);
+	void initializeGraphics(VkDescriptorSetLayout uboDescriptorSetLayout);
 	void initializeSampler();
 
 	void cleanupInitialized();

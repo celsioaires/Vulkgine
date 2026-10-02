@@ -9,13 +9,13 @@
 class Engine
 {
 private:
-	Renderer mRenderer;
-	Gui mGui;
-	Scene mScene;
+	Renderer mRenderer{};
+	Scene mScene{};
+	Gui mGui{};
 public:
 	void initializeRenderer(Window window);
-	void initializeGui();
 	void initializeScene();
+	void initializeGui();
 
 	void cleanupInitialized();
 

@@ -188,13 +188,12 @@ void Context::initializeSyncronization()
 void Context::initializeFrames()
 {
 	mUboDescriptorLayout.initialize(mDevice, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
-	mTextureDescriptorLayout.initialize(mDevice, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
 	
 	for (Frame& frame : frames)
 	{
 		frame.initializeCommands(mDevice, graphicsQueueIndex);
 		frame.initializeSyncronization();
-		frame.intializeDescriptors(mUboDescriptorLayout, mTextureDescriptorLayout);
+		frame.intializeDescriptors(mUboDescriptorLayout);
 	}
 }
 
@@ -204,7 +203,6 @@ void Context::cleanupInitialized()
 	for (Frame& frame : frames)
 		frame.cleanupInitialized();
 
-	mTextureDescriptorLayout.cleanup();
 	mUboDescriptorLayout.cleanup();
 
 	// Syncronization

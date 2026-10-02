@@ -39,8 +39,8 @@ void Gui::initializeContext(SDL_Window* window, VkInstance instance, VkPhysicalD
 {
 	assert(ImGui::CreateContext());
 
-	// ImGui::StyleColorsClassic();
-	ImGui::StyleColorsLight();
+	ImGui::StyleColorsClassic();
+	//ImGui::StyleColorsLight();
 	
 	assert(ImGui_ImplSDL2_InitForVulkan(window));
 
@@ -69,6 +69,11 @@ void Gui::initializeContext(SDL_Window* window, VkInstance instance, VkPhysicalD
 	assert(ImGui_ImplVulkan_Init(&initInfo));
 }
 
+void Gui::initializePanels(Node* node)
+{	
+	mHierarchy.initialize(node);
+}
+
 void Gui::cleanupInitialized()
 {
 	// Context
@@ -94,11 +99,11 @@ void Gui::drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, fl
 
 	ImGui::NewFrame();
 
-	mInspector.drawPanel(computeEffect);
 	mHierarchy.drawPanel(nodes);
+	mInspector.drawPanel(mHierarchy.getSelectedNode(), computeEffect);
 
 	ImGui::Begin("Dynamic resolution");
-	ImGui::SliderFloat("render scale", &renderScale, 0.250f, 1.0f);
+	ImGui::SliderFloat("Scale", &renderScale, 0.250f, 1.0f);
 	ImGui::End();
 
 	ImGui::Render();

@@ -4,6 +4,7 @@
 #include <fastgltf/glm_element_traits.hpp>
 #include <fastgltf/parser.hpp>
 #include <fastgltf/tools.hpp>
+#include "../Render/Renderer.h"
 
 std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, std::filesystem::path path)
 {
@@ -24,7 +25,7 @@ std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, std::filesystem::p
 	fastgltf::Parser parser{};
 	fastgltf::Expected<fastgltf::Asset> load = parser.loadBinaryGLTF(&data, path.parent_path(), options);
 
-	fastgltf::Asset asset;
+	fastgltf::Asset asset{};
 
 	if (load)
 		asset = std::move(load.get());
@@ -37,17 +38,28 @@ std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, std::filesystem::p
 	std::vector<Vertex> vertices{};
 	std::vector<uint32_t> indices{};
 
-	int i = 0;
-
+	int i{};
+	int testI{};
 	for (fastgltf::Mesh& mesh : asset.meshes)
 	{
 		MeshAsset meshAsset{};
 
+		meshAsset.mName = mesh.name.empty() ? "Unnamed" : mesh.name;
+
 		for (fastgltf::Primitive& primitive : mesh.primitives)
 		{
+			TextureAsset textureAsset = Loader::loadTexture(renderer, "?", testI);
+			Material material{ textureAsset.mGpuData };
+			testI++;
+			Pipeline& pipeline = renderer.getPipeline();
+
+			material.initializeDescriptor(pipeline.mMaterialDescriptor, pipeline.mMaterialDescriptorLayout);
+
 			Geometry geometry{};
+
 			geometry.mStartIndex = (uint32_t)indices.size();
 			geometry.mIndexCount = (uint32_t)asset.accessors[primitive.indicesAccessor.value()].count;
+			geometry.mMaterial = material;
 
 			size_t initialVertex = vertices.size();
 
@@ -100,14 +112,30 @@ std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, std::filesystem::p
 	return meshes;
 }
 
-TextureAsset Loader::loadTexture(Renderer& renderer, std::filesystem::path path)
+TextureAsset Loader::loadTexture(Renderer& renderer, std::filesystem::path path, int texture)
 {
 	TextureAsset asset{};
 
-	std::array<uint32_t, 16 * 16> pixels{};
+	uint32_t color0{}; 
+	uint32_t color1{}; 
 
-	uint32_t color0 = glm::packUnorm4x8({ 1, 0.5, 0, 1 });
-	uint32_t color1 = glm::packUnorm4x8({ 1, 1, 0, 1 });
+	switch (texture)
+	{
+	case 0:
+		color0 = glm::packUnorm4x8({ 1, 0.5, 0, 1 });
+		color1 = glm::packUnorm4x8({ 1, 1, 0, 1 });
+		break;
+	case 1:
+		color0 = glm::packUnorm4x8({ 1, 1, 1, 1 });
+		color1 = glm::packUnorm4x8({ 0.5, 0.5, 0.5, 1 });
+		break;
+	case 2:
+		color0 = glm::packUnorm4x8({ 0, 0, 1, 1 });
+		color1 = glm::packUnorm4x8({ 0, 1, 0, 1 });
+		break;
+	}
+
+	std::array<uint32_t, 16 * 16> pixels{};
 
 	// Checkerboard
 	int checkerboardSize = 16;
@@ -117,6 +145,10 @@ TextureAsset Loader::loadTexture(Renderer& renderer, std::filesystem::path path)
 			pixels[y * checkerboardSize + x] = ((x % 2) ^ (y % 2)) ? color0 : color1;
 
 	asset.mGpuData.initializeImage(renderer, (void*)&pixels, checkerboardSize, checkerboardSize);
+
+	Pipeline& pipeline = renderer.getPipeline();
+
+	asset.mGpuData.mSampler = pipeline.mLinearSampler;
 
 	return asset;
 }

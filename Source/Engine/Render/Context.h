@@ -28,7 +28,6 @@ struct Context
 	VkCommandBuffer mImmediateCommandBuffer{};
 	VkFence mImmediateFence{};
 	DescriptorLayout mUboDescriptorLayout{};
-	DescriptorLayout mTextureDescriptorLayout{};
 
 	// Initialize
 	void initializeDevice(SDL_Window* window);

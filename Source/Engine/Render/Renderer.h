@@ -6,8 +6,6 @@
 #include "Camera.h"
 #include "Renderable.h"
 
-class Scene;
-
 class Renderer
 {
 private:
@@ -43,7 +41,7 @@ public:
 	void beginScene(VkCommandBuffer commandBuffer);
 	void endScene(VkCommandBuffer commandBuffer);
 	void updateScene();
-	void renderRenderables(VkCommandBuffer commandBuffer, Scene& scene);
+	void renderRenderables(VkCommandBuffer commandBuffer);
 	
 	void clearRenderables();
 	void submitRenderable(Renderable& renderable);
@@ -59,4 +57,5 @@ public:
 	float& getRenderScale() { return mRenderScale; }
 	VkImageView getSwapchainView() { return mContext.mSwapchainViews[mSwapchainImageIndex]; }
 	Extent2D getSwapchainExtent() { return mContext.swapchainExtent; }
+	Pipeline& getPipeline() { return mPipeline; }
 };

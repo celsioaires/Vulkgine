@@ -17,6 +17,7 @@ private:
 public:
 	void initializeDescriptors(VkDevice device);
 	void initializeContext(SDL_Window* window, VkInstance instance, VkPhysicalDevice physicalDevice, VkQueue queue);
+	void initializePanels(Node* node);
 
 	void cleanupInitialized();
 

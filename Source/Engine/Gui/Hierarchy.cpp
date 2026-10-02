@@ -2,22 +2,21 @@
 
 #include <imgui.h>
 
+void Hierarchy::initialize(Node* node)
+{
+    mSelectedNode = node;
+}
+
 void Hierarchy::drawPanel(std::vector<Node*>& nodes)
 {
 	ImGui::Begin("Hierarchy");
 
-    int i{};
-
     for (Node* node : nodes)
     {
-		ImGui::PushID(i++);
+        bool selected = (mSelectedNode == node);
 
-        auto position = glm::vec3(node->mTransform[3]);
-
-        if (ImGui::DragFloat3("Position", &position.x, 0.1f))
-            node->mTransform[3] = glm::vec4(position, 1.0f);
-
-        ImGui::PopID();
+        if (ImGui::Selectable(node->mName.c_str(), selected))
+            mSelectedNode = node;
     }
 
 	ImGui::End();

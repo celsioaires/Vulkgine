@@ -6,7 +6,6 @@
 #include <vulkan/vulkan.h>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../Scene/Scene.h"
 #include "Util.h"
 
 void Renderer::initializeContext(SDL_Window* window, uint32_t width, uint32_t height)
@@ -21,16 +20,10 @@ void Renderer::initializeContext(SDL_Window* window, uint32_t width, uint32_t he
 
 void Renderer::initializePipeline()
 {
-	std::vector<VkDescriptorSetLayout> descriptorSetLayouts
-	{
-		mContext.mUboDescriptorLayout.mHandle,
-		mContext.mTextureDescriptorLayout.mHandle,
-	};
-
 	mPipeline.initializeDescriptors(mContext.mDevice, mContext.renderImage.view);
 	mPipeline.initializeShaders();
 	mPipeline.initializeCompute();
-	mPipeline.initializeGraphics(descriptorSetLayouts);
+	mPipeline.initializeGraphics(mContext.mUboDescriptorLayout.mHandle);
 	mPipeline.initializeSampler();
 }
 
@@ -299,14 +292,14 @@ void Renderer::updateScene()
 	Mvp& mvp = mCamera.mMvp;
 	Buffer& ubo = mCamera.mUbo;
 
-	mvp.mView = glm::translate(glm::mat4(1), { 0, 0, -3 });
+	mvp.mView = glm::translate(glm::mat4(1), { 0, 0, -5 });
 	mvp.mProjection = glm::perspective(glm::radians(70.0f), (float)mExtent.width / mExtent.height, 0.1f, 10000.0f);
 	mvp.mProjection[1][1] *= -1;
 
 	ubo.mapData(&mCamera.mMvp);
 }
 
-void Renderer::renderRenderables(VkCommandBuffer commandBuffer, Scene& scene)
+void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 {
 	// Pipeline
 	VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -322,16 +315,10 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer, Scene& scene)
 	VkRect2D scissor{};
 	scissor.extent = { mExtent.width, mExtent.height };
 
-	// Texture
-	std::vector<TextureAsset> textureAssets = scene.getTextures();
-	TextureAsset textureAsset = textureAssets[0];
-	Texture texture = textureAsset.mGpuData;
-
-	// Descriptors
+	// Descriptor
 	Descriptor& frameDescriptor = mFrame.mDescriptor;
 
 	frameDescriptor.updateSet(mFrame.mUboDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, mCamera.mUbo.mBuffer);
-	frameDescriptor.updateSet(mFrame.mTextureDescriptorSet, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texture.mImage.view, mPipeline.mSampler);
 
 	// Pipeline commands
 	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mGraphicsPipeline);
@@ -341,18 +328,26 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer, Scene& scene)
 	// Iterate renderables
 	for (Renderable& renderable : mRenderables)
 	{
+		// Data
 		Mesh& mesh = renderable.mMesh;
 		Geometry& geometry = renderable.mGeometry;
+		Material& material = geometry.mMaterial;
 
 		// Push constants
 		GraphicsPushConstants pushConstants{};
 		pushConstants.mTransform = renderable.mTransform;
 		pushConstants.mVbo = mesh.mVertexBuffer.mAddress;
 
+		// Descriptors
+		std::vector<VkDescriptorSet> descriptorSets
+		{
+			mFrame.mUboDescriptorSet,
+			material.mSet
+		};
+
 		// Pipeline commands
-		vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mGraphicsPipeline);
-		vkCmdBindDescriptorSets(commandBuffer, bindPoint, graphicsLayout, 0, 2, frameDescriptor.mSets.data(), 0, 0);
 		vkCmdPushConstants(commandBuffer, mPipeline.mGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GraphicsPushConstants), &pushConstants);
+		vkCmdBindDescriptorSets(commandBuffer, bindPoint, graphicsLayout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, 0);
 
 		// Draw commands
 		vkCmdBindIndexBuffer(commandBuffer, mesh.mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
