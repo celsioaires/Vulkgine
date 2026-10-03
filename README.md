@@ -1,6 +1,6 @@
 # Vulkgine
 
-![Vulkgine](Pics/Vulkgine.png)
+![Vulkgine](Vulkgine.png)
 
 Vendor dependencies:
 - fastgltf
