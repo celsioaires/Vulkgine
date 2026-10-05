@@ -288,11 +288,13 @@ void Renderer::updateScene()
 	mExtent.width = (uint32_t)(std::min(mContext.swapchainExtent.width, mRenderImage.extent.width) * mRenderScale);
 	mExtent.height = (uint32_t)(std::min(mContext.swapchainExtent.height, mRenderImage.extent.height) * mRenderScale);
 
-	// Mvp
+	// Camera
+	mCamera.updateData();
+
 	Mvp& mvp = mCamera.mMvp;
 	Buffer& ubo = mCamera.mUbo;
 
-	mvp.mView = glm::translate(glm::mat4(1), { 0, 0, -5 });
+	mvp.mView = mCamera.getView();
 	mvp.mProjection = glm::perspective(glm::radians(70.0f), (float)mExtent.width / mExtent.height, 0.1f, 10000.0f);
 	mvp.mProjection[1][1] *= -1;
 
@@ -363,6 +365,11 @@ void Renderer::clearRenderables()
 void Renderer::submitRenderable(Renderable& renderable)
 {
 	mRenderables.push_back(renderable);
+}
+
+void Renderer::updateCamera(SDL_Event* event)
+{
+	mCamera.processMovement(event);
 }
 
 VkCommandBuffer Renderer::beginImmediateRender()

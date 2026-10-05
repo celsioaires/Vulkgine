@@ -36,6 +36,7 @@ void Engine::updateGui(Event event)
 {
 	mGui.updatePanels(event.mPointer);
 	mGui.drawPanels(mScene.getNodes(), mRenderer.getComputeEffect(), mRenderer.getRenderScale());
+	mRenderer.updateCamera(event.mPointer);
 }
 
 void Engine::prepareFrame()
@@ -46,7 +47,6 @@ void Engine::prepareFrame()
 
 	mRenderer.clearRenderables();
 	mScene.submitRenderables(mRenderer);
-
 	mRenderer.updateScene();
 }
 

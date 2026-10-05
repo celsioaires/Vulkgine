@@ -41,10 +41,14 @@ public:
 	void beginScene(VkCommandBuffer commandBuffer);
 	void endScene(VkCommandBuffer commandBuffer);
 	void updateScene();
-	void renderRenderables(VkCommandBuffer commandBuffer);
 	
+	// Renderables
+	void renderRenderables(VkCommandBuffer commandBuffer);
 	void clearRenderables();
 	void submitRenderable(Renderable& renderable);
+
+	// Camera
+	void updateCamera(SDL_Event* event);
 
 	// Immediate
 	VkCommandBuffer beginImmediateRender();
