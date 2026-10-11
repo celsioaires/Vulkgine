@@ -10,10 +10,10 @@ void Inspector::drawPanel(Node* node, ComputeEffect& computeEffect)
 	{
 		ImGui::Text("%s", node->mName.c_str());
 
-		auto position = glm::vec3(node->mTransform[3]);
+		auto position = glm::vec3(node->mWorldTransform[3]);
 
 		if (ImGui::DragFloat3("Position", &position.x, 0.1f))
-			node->mTransform[3] = glm::vec4(position, 1.0f);
+			node->mWorldTransform[3] = glm::vec4(position, 1.0f);
 	}
 
 	ImGui::End();

@@ -14,7 +14,7 @@ struct Camera
 {
 	Mvp mMvp{};
 	Buffer mUbo{};
-	glm::vec3 mPosition{};
+	glm::vec3 mPosition{0, 0, 150};
 	glm::vec3 mVelocity{};
 	float mPitch{};
 	float mYaw{};

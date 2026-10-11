@@ -7,7 +7,7 @@
 
 struct MeshAsset
 {
-	std::string mName{};
+	std::string mName{ "Unnamed mesh"};
 	Mesh mGpuData{};
 	std::vector<Geometry> mGeometries{};
 };

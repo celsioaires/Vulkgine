@@ -47,7 +47,7 @@ void Frame::intializeDescriptors(DescriptorLayout uboLayout)
 {
 	std::vector<DescriptorPoolSize> poolSizes
 	{
-		{ uboLayout.mType, 1 }
+		{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1 } // TODO: WARNING POSIBLE ERROR
 	};
 
 	mDescriptor.initializePool(mDevice, poolSizes);

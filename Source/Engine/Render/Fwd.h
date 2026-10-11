@@ -99,3 +99,17 @@ struct DescriptorPoolSize
     VkDescriptorType mType{};
     uint32_t mDescriptorCount{};
 };
+
+struct MaterialConstants
+{
+    glm::vec4 mColorFactors{};
+    glm::vec4 mMetalRoughFactors{};
+    glm::vec4 mPadding0[14]{};
+};
+
+struct DescriptorSetBinding
+{
+    uint32_t mBinding{};
+    VkDescriptorType mType{};
+    VkShaderStageFlags mStage{};
+};

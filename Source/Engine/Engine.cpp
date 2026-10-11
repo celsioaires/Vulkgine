@@ -9,8 +9,7 @@ void Engine::initializeRenderer(Window window)
 
 void Engine::initializeScene()
 {
-	mScene.initializeMeshes(mRenderer);
-	mScene.initializeNodes();
+	mScene.initializeAsset(mRenderer);
 }
 
 void Engine::initializeGui()

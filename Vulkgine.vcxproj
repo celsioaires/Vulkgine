@@ -210,6 +210,8 @@
     <ClCompile Include="Vendor\vk-bootstrap-1.4.360\src\VkBootstrap.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Source\Engine\Asset\GltfAsset.h" />
+    <ClInclude Include="Source\Engine\Asset\MaterialAsset.h" />
     <ClInclude Include="Source\Engine\Gui\Hierarchy.h" />
     <ClInclude Include="Source\Engine\Asset\TextureAsset.h" />
     <ClInclude Include="Source\Engine\Render\Camera.h" />

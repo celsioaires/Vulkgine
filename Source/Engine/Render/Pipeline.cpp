@@ -1,36 +1,49 @@
-#include "Pipeline.h"
+	#include "Pipeline.h"
 
-#include <vulkan/vulkan.h>
+	#include <vulkan/vulkan.h>
 
-#include "../Core/File.h"
-#include "Util.h"
+	#include "../Core/File.h"
+	#include "Util.h"
 
-void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
-{
-	mDevice = device;
-
-	std::vector<DescriptorPoolSize> poolSizes{};
-
-	// Compute
-	poolSizes =
+	void Pipeline::initializeDescriptors(VkDevice device, VkImageView imageView)
 	{
-		{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }
-	};
+		mDevice = device;
 
-	mDescriptorLayout.initialize(device, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT, 2);
-	mDescriptor.initializePool(device, poolSizes);
-	mDescriptorSet = mDescriptor.initializeSet(mDescriptorLayout.mHandle);
-	mDescriptor.updateSet(mDescriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, imageView, 0);
+		std::vector<DescriptorPoolSize> poolSizes{};
+		std::vector<DescriptorSetBinding> setBindings{};
 
-	// Global
-	poolSizes =
-	{
-		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 3 }
-	};
+		// Compute
+		poolSizes =
+		{
+			{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }
+		};
 
-	mMaterialDescriptorLayout.initialize(device, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 3);
-	mMaterialDescriptor.initializePool(device, poolSizes);
-}
+		setBindings =
+		{
+			{ 0, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, VK_SHADER_STAGE_COMPUTE_BIT }
+		};
+
+		mDescriptorLayout.initialize(device, setBindings);
+		mDescriptor.initializePool(device, poolSizes);
+		mDescriptorSet = mDescriptor.initializeSet(mDescriptorLayout.mHandle);
+		mDescriptor.updateSet(mDescriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, imageView, 0, 0);
+
+		// Material
+		poolSizes =
+		{
+			{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 10000 },
+			{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 10000 }
+		};
+
+		setBindings =
+		{
+			{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT },
+			{ 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT }
+		};
+
+		mMaterialDescriptorLayout.initialize(device, setBindings);
+		mMaterialDescriptor.initializePool(device, poolSizes);
+	}
 
 void Pipeline::initializeShaders()
 {
@@ -275,5 +288,5 @@ void Pipeline::cleanupInitialized()
 
 void Pipeline::updateDescriptors(VkImageView imageView)
 {
-	mDescriptor.updateSet(mDescriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, imageView, 0);
+	mDescriptor.updateSet(mDescriptorSet, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, imageView, 0, 0);
 }

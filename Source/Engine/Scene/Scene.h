@@ -1,23 +1,20 @@
 #pragma once
 
 #include "../Render/Renderer.h"
-#include "../Asset/MeshAsset.h"
-#include "../Asset/TextureAsset.h"
+#include "../Asset/GltfAsset.h"
 
 #include "Node.h"
 
 class Scene
 {
 private:
-	std::vector<MeshAsset> mMeshAssets{};
-	std::vector<Node*> mNodes{};
+	GltfAsset mAsset{};
 public:
-	void initializeMeshes(Renderer& renderer);
-	void initializeNodes();
+	void initializeAsset(Renderer& renderer);
 
 	void cleanupInitialized();
 
 	void submitRenderables(Renderer& renderer);
 
-	std::vector<Node*>& getNodes() { return mNodes; }
+	std::vector<Node*>& getNodes() { return mAsset.mNodes; }
 };

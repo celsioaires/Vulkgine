@@ -2,24 +2,28 @@
 
 #include "Util.h"
 
-void DescriptorLayout::initialize(VkDevice device, VkDescriptorType type, VkShaderStageFlags stage, uint32_t binding)
+void DescriptorLayout::initialize(VkDevice device, std::vector<DescriptorSetBinding>& setBindings)
 {
 	mDevice = device;
-	mType = type;
-	mBinding = binding;
 
-	// Binding
-	VkDescriptorSetLayoutBinding layoutBinding{};
-	layoutBinding.descriptorType = type;
-	layoutBinding.stageFlags = stage;
-	layoutBinding.descriptorCount = 1;
-	layoutBinding.binding = 0;
+	std::vector<VkDescriptorSetLayoutBinding> vkSetBindings{};
+
+	for (DescriptorSetBinding& setBinding : setBindings)
+	{
+		VkDescriptorSetLayoutBinding vkSetBinding{};
+		vkSetBinding.binding = setBinding.mBinding;
+		vkSetBinding.descriptorType = setBinding.mType;
+		vkSetBinding.stageFlags = setBinding.mStage;
+		vkSetBinding.descriptorCount = 1;
+
+		vkSetBindings.push_back(vkSetBinding);
+	}
 
 	// Info
 	VkDescriptorSetLayoutCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	createInfo.pBindings = &layoutBinding;
-	createInfo.bindingCount = 1;
+	createInfo.pBindings = vkSetBindings.data();
+	createInfo.bindingCount = (uint32_t)vkSetBindings.size();
 
 	// Create
 	VK_ASSERT(vkCreateDescriptorSetLayout(mDevice, &createInfo, 0, &mHandle));
@@ -52,7 +56,7 @@ void Descriptor::initializePool(VkDevice device, std::vector<DescriptorPoolSize>
 	createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	createInfo.pPoolSizes = vkSizes.data();
 	createInfo.poolSizeCount = (uint32_t)sizes.size();
-	createInfo.maxSets = 1000;
+	createInfo.maxSets = 10000;
 
 	// Create
 	VK_ASSERT(vkCreateDescriptorPool(device, &createInfo, 0, &mPool));
@@ -83,7 +87,7 @@ void Descriptor::cleanupInitialized()
 	mPool = 0;
 }
 
-void Descriptor::updateSet(VkDescriptorSet set, VkDescriptorType type, VkImageView imageView, VkSampler sampler)
+void Descriptor::updateSet(VkDescriptorSet set, VkDescriptorType type, VkImageView imageView, VkSampler sampler, uint32_t binding)
 {
 	// Image
 	VkDescriptorImageInfo imageInfo{};
@@ -99,11 +103,11 @@ void Descriptor::updateSet(VkDescriptorSet set, VkDescriptorType type, VkImageVi
 	// Write
 	VkWriteDescriptorSet write{};
 	write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	write.descriptorType = type;
 	write.pImageInfo = &imageInfo;
+	write.descriptorType = type;
+	write.dstBinding = binding;
 	write.dstSet = set;
 	write.descriptorCount = 1;
-	write.dstBinding = 0;
 
 	// Update
 	vkUpdateDescriptorSets(mDevice, 1, &write, 0, 0);

@@ -7,5 +7,4 @@
 struct MeshNode : public Node
 {
 	MeshAsset mAsset{};
-
 };

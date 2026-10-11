@@ -6,10 +6,8 @@ struct DescriptorLayout
 {
 	VkDevice mDevice{};
 	VkDescriptorSetLayout mHandle{};
-	VkDescriptorType mType{};
-	uint32_t mBinding{};
 
-	void initialize(VkDevice device, VkDescriptorType type, VkShaderStageFlags stage, uint32_t binding);
+	void initialize(VkDevice device, std::vector<DescriptorSetBinding>& setBindings);
 	void cleanup();
 };
 
@@ -24,6 +22,6 @@ struct Descriptor
 
 	void cleanupInitialized();
 
-	void updateSet(VkDescriptorSet set, VkDescriptorType type, VkImageView imageView, VkSampler sampler);
+	void updateSet(VkDescriptorSet set, VkDescriptorType type, VkImageView imageView, VkSampler sampler, uint32_t binding);
 	void updateSet(VkDescriptorSet set, VkDescriptorType type, VkBuffer buffer);
 };

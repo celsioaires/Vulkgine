@@ -187,7 +187,12 @@ void Context::initializeSyncronization()
 
 void Context::initializeFrames()
 {
-	mUboDescriptorLayout.initialize(mDevice, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0);
+	std::vector<DescriptorSetBinding> setBindings =
+	{
+		{ 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT }
+	};
+
+	mUboDescriptorLayout.initialize(mDevice, setBindings);
 	
 	for (Frame& frame : frames)
 	{

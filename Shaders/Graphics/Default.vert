@@ -3,6 +3,7 @@
 #extension GL_EXT_buffer_reference : require
 
 layout (location = 0) out vec2 oUv;
+layout (location = 1) out vec4 oColor;
 
 struct Vertex
 {
@@ -10,9 +11,13 @@ struct Vertex
 	float padding;
 	vec2 uv;
 	vec2 padding2;
+	vec4 color;
 };
 
-layout (buffer_reference, std430) readonly buffer Vbo { Vertex vertices[]; };
+layout (buffer_reference, std430) readonly buffer Vbo
+{ 
+	Vertex vertices[];
+};
 
 layout (push_constant) uniform constants
 {
@@ -32,4 +37,5 @@ void main()
 	gl_Position = uMvp.projection * uMvp.view * uPushConstants.transform * vec4(vertex.position, 1.0);
 
 	oUv = vertex.uv;
+	oColor = vertex.color;
 }

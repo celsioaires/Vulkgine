@@ -2,65 +2,39 @@
 
 #include <array>
 
-#include "../Asset/Loader.h"
+#include <fmt/core.h>
 
+#include "../Asset/Loader.h"
 #include "MeshNode.h"
 
-void Scene::initializeMeshes(Renderer& renderer)
+void Scene::initializeAsset(Renderer& renderer)
 {
-	mMeshAssets = Loader::loadMeshes(renderer, "Assets/Models/basicmesh.glb");
-}
-
-void Scene::initializeNodes()
-{
-	for (MeshAsset& meshAsset : mMeshAssets)
-	{
-		auto* meshNode = new MeshNode{};
-
-		meshNode->mName = meshAsset.mName;
-		meshNode->mAsset = meshAsset;
-
-		mNodes.push_back(meshNode);
-	}
+	mAsset = Loader::loadGltf(renderer, "Assets/Models/structure.glb");
 }
 
 void Scene::cleanupInitialized()
 {
-	for (Node* node : mNodes)
-		delete node;
 
-	mNodes.clear();
-
-	for (MeshAsset& meshAsset : mMeshAssets)
-	{
-		meshAsset.mGpuData.cleanupInitialized();
-
-		for (Geometry& meshGeometry : meshAsset.mGeometries)
-		{
-			Material& geometryMaterial = meshGeometry.mMaterial;
-
-			geometryMaterial.mColorTexture.cleanupInitialized();
-			//geometryMaterial.mMetalRoughImage.cleanupInitialized();
-		}
-	}
 }
 
 void Scene::submitRenderables(Renderer& renderer)
 {
-	for (Node* node : mNodes)
+	for (Node* node : mAsset.mNodes)
 	{
 		auto* meshNode = dynamic_cast<MeshNode*>(node);
 
 		if (meshNode)
 		{
 			MeshAsset& meshAsset = meshNode->mAsset;
+			glm::mat4 topMatrix(1);
+			glm::mat4 nodeMatrix = topMatrix * meshNode->mWorldTransform;
 
 			for (Geometry& meshGeometry : meshAsset.mGeometries)
 			{
 				Renderable renderable{};
 				renderable.mMesh = meshAsset.mGpuData;
 				renderable.mGeometry = meshGeometry;
-				renderable.mTransform = node->mTransform;
+				renderable.mTransform = nodeMatrix;
 
 				renderer.submitRenderable(renderable);
 			}

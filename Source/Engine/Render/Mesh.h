@@ -8,10 +8,11 @@ class Renderer;
 
 struct Vertex
 {
-    glm::vec3 mPosition;
-    float padding;
-    glm::vec2 mUv;
-    glm::vec2 padding2;
+    glm::vec3 mPosition{};
+    float mPadding0{};
+    glm::vec2 mUv{};
+    glm::vec2 mPadding1{};
+    glm::vec4 mColor{};
 };
 
 struct Mesh

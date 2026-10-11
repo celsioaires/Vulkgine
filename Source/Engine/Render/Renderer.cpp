@@ -170,7 +170,7 @@ void Renderer::endRender()
 void Renderer::beginScene(VkCommandBuffer commandBuffer)
 {
 	// Clear
-	VkClearColorValue clearColor{ { 0.25f, 0.25f, 0.25f, 1.0f } };
+	VkClearColorValue clearColor{ { 0.1f, 0.1f, 0.1f, 1.0f } };
 
 	VkImageSubresourceRange clearRange{};
 	clearRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -301,6 +301,16 @@ void Renderer::updateScene()
 	ubo.mapData(&mCamera.mMvp);
 }
 
+void Renderer::clearRenderables()
+{
+	mRenderables.clear();
+}
+
+void Renderer::submitRenderable(Renderable& renderable)
+{
+	mRenderables.push_back(renderable);
+}
+
 void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 {
 	// Pipeline
@@ -328,7 +338,7 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 	// Iterate renderables
-	for (Renderable& renderable : mRenderables)
+	for (Renderable& renderable : mRenderables) // 461
 	{
 		// Data
 		Mesh& mesh = renderable.mMesh;
@@ -355,16 +365,6 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 		vkCmdBindIndexBuffer(commandBuffer, mesh.mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed(commandBuffer, geometry.mIndexCount, 1, geometry.mStartIndex, 0, 0);
 	}
-}
-
-void Renderer::clearRenderables()
-{
-	mRenderables.clear();
-}
-
-void Renderer::submitRenderable(Renderable& renderable)
-{
-	mRenderables.push_back(renderable);
 }
 
 void Renderer::updateCamera(SDL_Event* event)
