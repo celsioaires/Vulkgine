@@ -113,7 +113,7 @@ void Descriptor::updateSet(VkDescriptorSet set, VkDescriptorType type, VkImageVi
 	vkUpdateDescriptorSets(mDevice, 1, &write, 0, 0);
 }
 
-void Descriptor::updateSet(VkDescriptorSet set, VkDescriptorType type, VkBuffer buffer)
+void Descriptor::updateSet(VkDescriptorSet set, VkDescriptorType type, VkBuffer buffer, uint32_t binding)
 {
 	// Image
 	VkDescriptorBufferInfo bufferInfo{};
@@ -127,7 +127,7 @@ void Descriptor::updateSet(VkDescriptorSet set, VkDescriptorType type, VkBuffer 
 	write.pBufferInfo = &bufferInfo;
 	write.dstSet = set;
 	write.descriptorCount = 1;
-	write.dstBinding = 0;
+	write.dstBinding = binding;
 
 	// Update
 	vkUpdateDescriptorSets(mDevice, 1, &write, 0, 0);

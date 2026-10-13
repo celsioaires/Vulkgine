@@ -23,5 +23,5 @@ struct Descriptor
 	void cleanupInitialized();
 
 	void updateSet(VkDescriptorSet set, VkDescriptorType type, VkImageView imageView, VkSampler sampler, uint32_t binding);
-	void updateSet(VkDescriptorSet set, VkDescriptorType type, VkBuffer buffer);
+	void updateSet(VkDescriptorSet set, VkDescriptorType type, VkBuffer buffer, uint32_t binding);
 };

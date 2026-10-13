@@ -330,7 +330,7 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 	// Descriptor
 	Descriptor& frameDescriptor = mFrame.mDescriptor;
 
-	frameDescriptor.updateSet(mFrame.mUboDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, mCamera.mUbo.mBuffer);
+	frameDescriptor.updateSet(mFrame.mUboDescriptorSet, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, mCamera.mUbo.mBuffer, 0);
 
 	// Pipeline commands
 	vkCmdBindPipeline(commandBuffer, bindPoint, mPipeline.mGraphicsPipeline);
@@ -338,7 +338,7 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
 	// Iterate renderables
-	for (Renderable& renderable : mRenderables) // 461
+	for (Renderable& renderable : mRenderables)
 	{
 		// Data
 		Mesh& mesh = renderable.mMesh;

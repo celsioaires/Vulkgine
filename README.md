@@ -2,7 +2,7 @@
 
 Progress:
 
-![Vulkgine](Vulkgine2.png)
+![Vulkgine](Vulkgine3.png)
 
 Vendor dependencies:
 - fastgltf

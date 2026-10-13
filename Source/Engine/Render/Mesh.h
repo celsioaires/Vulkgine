@@ -13,6 +13,8 @@ struct Vertex
     glm::vec2 mUv{};
     glm::vec2 mPadding1{};
     glm::vec4 mColor{};
+    glm::vec3 mNormal{};
+    float mPadding2{};
 };
 
 struct Mesh

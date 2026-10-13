@@ -68,11 +68,13 @@ GltfAsset Loader::loadGltf(Renderer& renderer, std::filesystem::path path)
 	}
 	}
 
-	std::vector<MaterialAsset> materials = loadMaterials(renderer, asset);
+	std::vector<TextureAsset> textures = loadTextures(renderer, asset);
+	std::vector<MaterialAsset> materials = loadMaterials(renderer, asset, textures);
 	std::vector<MeshAsset> meshes = loadMeshes(renderer, asset, materials);
 	std::vector<Node*> nodes = loadNodes(asset, meshes);
 	std::vector<Node*> topNodes = loadTopNodes(nodes);
 	
+	gltf.mTextures = textures;
 	gltf.mMaterials = materials;
 	gltf.mMeshes = meshes;
 	gltf.mNodes = nodes;
@@ -81,7 +83,61 @@ GltfAsset Loader::loadGltf(Renderer& renderer, std::filesystem::path path)
 	return gltf;
 }
 
-std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::Asset& asset)
+std::vector<TextureAsset> Loader::loadTextures(Renderer& renderer, fastgltf::Asset& asset)
+{
+	std::vector<TextureAsset> textures{};
+
+	int i{};
+
+	for (fastgltf::Image& image : asset.images)
+	{
+		uint32_t color0{};
+		uint32_t color1{};
+
+		switch (i)
+		{
+		case 0:
+			color0 = glm::packUnorm4x8({ 1, 0.5, 0, 1 });
+			color1 = glm::packUnorm4x8({ 1, 1, 0, 1 });
+			break;
+		case 1:
+			color0 = glm::packUnorm4x8({ 1, 1, 1, 1 });
+			color1 = glm::packUnorm4x8({ 0.5, 0.5, 0.5, 1 });
+			break;
+		case 2:
+			color0 = glm::packUnorm4x8({ 0, 0, 1, 1 });
+			color1 = glm::packUnorm4x8({ 0, 1, 0, 1 });
+			break;
+		default:
+			color0 = glm::packUnorm4x8({ 1, 0, 1, 1 });
+			color1 = glm::packUnorm4x8({ 0, 1, 1, 1 });
+			break;
+		}
+
+		std::array<uint32_t, 16 * 16> pixels{};
+
+		// Checkerboard
+		int checkerboardSize = 16;
+
+		for (int x = 0; x < checkerboardSize; x++)
+			for (int y = 0; y < checkerboardSize; y++)
+				pixels[y * checkerboardSize + x] = ((x % 2) ^ (y % 2)) ? color0 : color1;
+
+		Pipeline& pipeline = renderer.getPipeline();
+		TextureAsset textureAsset{};
+
+		textureAsset.mGpuData.mSampler = pipeline.mNearestSampler;
+		textureAsset.mGpuData.initializeImage(renderer, (void*)&pixels, checkerboardSize, checkerboardSize);
+
+		textures.push_back(textureAsset);
+
+		i++;
+	}
+
+	return textures;
+}
+
+std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::Asset& asset, std::vector<TextureAsset>& textures)
 {
 	std::vector<MaterialAsset> materials{};
 
@@ -103,7 +159,13 @@ std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::A
 		constants.mMetalRoughFactors.y = material.pbrData.roughnessFactor;
 
 		// Texture
-		TextureAsset textureAsset = Loader::loadTexture(renderer, "?", i);
+		TextureAsset textureAsset{};
+
+		if (i >= textures.size())
+			textureAsset = textures[1];
+		else
+			textureAsset = textures[i];
+
 		Texture& colorTexture = textureAsset.mGpuData;
 
 		// Material
@@ -113,6 +175,9 @@ std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::A
 		materialAsset.mGpuData.mColorTexture = colorTexture;
 
 		materialAsset.mGpuData.initializeDescriptor(pipeline.mMaterialDescriptor, pipeline.mMaterialDescriptorLayout);
+		materialAsset.mGpuData.initializeUbo(renderer);
+
+		materialAsset.mGpuData.updateDescriptor(constants);
 
 		materials.push_back(materialAsset);
 
@@ -175,6 +240,9 @@ std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, fastgltf::Asset& a
 				[&](glm::vec3 position, size_t index)
 				{
 					Vertex vertex{};
+
+					vertex.mColor = glm::vec4(1);
+					vertex.mNormal = { 1, 0, 0 };
 					vertex.mPosition = position;
 
 					vertices[initialVertex + index] = vertex;
@@ -204,6 +272,19 @@ std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, fastgltf::Asset& a
 					[&](glm::vec4 color, size_t index)
 					{
 						vertices[initialVertex + index].mColor = color;
+					}
+				);
+
+			// Vertex normal
+			fastgltf::Primitive::attribute_type* normalAttrib = primitive.findAttribute("NORMAL");
+
+			if (normalAttrib != primitive.attributes.end())
+				fastgltf::iterateAccessorWithIndex<glm::vec3>(
+					asset,
+					asset.accessors[(*normalAttrib).second],
+					[&](glm::vec3 normal, size_t index)
+					{
+						vertices[initialVertex + index].mNormal = normal;
 					}
 				);
 
@@ -308,49 +389,4 @@ std::vector<Node*> Loader::loadTopNodes(std::vector<Node*>& nodes)
 		}
 
 	return topNodes;
-}
-
-TextureAsset Loader::loadTexture(Renderer& renderer, std::filesystem::path path, int texture)
-{
-	TextureAsset asset{};
-
-	uint32_t color0{}; 
-	uint32_t color1{}; 
-
-	switch (texture)
-	{
-	case 0:
-		color0 = glm::packUnorm4x8({ 1, 0.5, 0, 1 });
-		color1 = glm::packUnorm4x8({ 1, 1, 0, 1 });
-		break;
-	case 1:
-		color0 = glm::packUnorm4x8({ 1, 1, 1, 1 });
-		color1 = glm::packUnorm4x8({ 0.5, 0.5, 0.5, 1 });
-		break;
-	case 2:
-		color0 = glm::packUnorm4x8({ 0, 0, 1, 1 });
-		color1 = glm::packUnorm4x8({ 0, 1, 0, 1 });
-		break;
-	default:
-		color0 = glm::packUnorm4x8({ 1.0f, 0.0f, 1.0f, 1.0f }); // Magenta
-		color1 = glm::packUnorm4x8({ 0.0f, 1.0f, 1.0f, 1.0f }); // Cian
-		break;
-	}
-
-	std::array<uint32_t, 16 * 16> pixels{};
-
-	// Checkerboard
-	int checkerboardSize = 16;
-
-	for (int x = 0; x < checkerboardSize; x++)
-		for (int y = 0; y < checkerboardSize; y++)
-			pixels[y * checkerboardSize + x] = ((x % 2) ^ (y % 2)) ? color0 : color1;
-
-	asset.mGpuData.initializeImage(renderer, (void*)&pixels, checkerboardSize, checkerboardSize);
-
-	Pipeline& pipeline = renderer.getPipeline();
-
-	asset.mGpuData.mSampler = pipeline.mLinearSampler;
-
-	return asset;
 }
