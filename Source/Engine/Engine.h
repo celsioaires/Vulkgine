@@ -19,7 +19,7 @@ public:
 
 	void cleanupInitialized();
 
-	void updateGui(Event event);
+	void processEvents(Event event);
 
 	void prepareFrame();
 	void drawFrame();

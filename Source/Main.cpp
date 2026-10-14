@@ -35,7 +35,7 @@ static void runLoop()
         Event event{};
 
         while (sApplication.pollEvents(event))
-            sEngine.updateGui(event);
+            sEngine.processEvents(event);
 
         if (sApplication.isMinimized())
             continue;

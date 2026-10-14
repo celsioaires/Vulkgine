@@ -116,7 +116,7 @@ void Context::initializeSwapchain(uint32_t width, uint32_t height)
 	// Create swapchain
 	vkb::Result<vkb::Swapchain> swapchainResult = swapchainBuilder
 		.set_desired_format(surfaceFormat)
-		.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR)
+		.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR) // VK_PRESENT_MODE_IMMEDIATE_KHR VK_PRESENT_MODE_FIFO_KHR
 		.set_desired_extent(width, height)
 		.add_image_usage_flags(imageUsages)
 		.build();

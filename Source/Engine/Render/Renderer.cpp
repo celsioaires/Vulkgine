@@ -369,6 +369,16 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 
 void Renderer::updateCamera(SDL_Event* event)
 {
+	SDL_Event& e = *event;
+
+	if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_LALT)
+	{
+		SDL_SetRelativeMouseMode(SDL_FALSE);
+		return;
+	}
+
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+
 	mCamera.processMovement(event);
 }
 

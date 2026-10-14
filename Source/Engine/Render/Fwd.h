@@ -77,7 +77,7 @@ struct Extent3D
 
 struct ComputePushConstants
 {
-    glm::vec4 data1{ 0.5, 0.5, 0.5, 1.0 };
+    glm::vec4 data1{ 0, 0, 0.25, 1 };
     glm::vec4 data2{};
     glm::vec4 data3{};
     glm::vec4 data4{};

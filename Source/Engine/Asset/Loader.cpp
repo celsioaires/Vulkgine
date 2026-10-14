@@ -8,6 +8,7 @@
 #include <glm/gtc/quaternion.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
+#include <stb/stb_image.h>
 
 #include "../Render/Renderer.h"
 #include "../Scene/MeshNode.h"
@@ -87,51 +88,84 @@ std::vector<TextureAsset> Loader::loadTextures(Renderer& renderer, fastgltf::Ass
 {
 	std::vector<TextureAsset> textures{};
 
-	int i{};
+	Pipeline& pipeline = renderer.getPipeline();
 
+	// Texture
+	TextureAsset textureAsset{};
+	textureAsset.mGpuData.mSampler = pipeline.mNearestSampler;
+
+	stbi_uc* pixels{};
+
+	// Assets
 	for (fastgltf::Image& image : asset.images)
 	{
-		uint32_t color0{};
-		uint32_t color1{};
+		int width{}, height{}, channels{};
 
-		switch (i)
+		std::visit(
+			fastgltf::visitor{
+				[](auto& arg) {},
+				[&](fastgltf::sources::URI& filePath)
+				{
+					assert(filePath.fileByteOffset == 0);
+					assert(filePath.uri.isLocalPath());
+
+					std::string path(filePath.uri.path().begin(), filePath.uri.path().end());
+
+					pixels = stbi_load(path.c_str(), &width, &height, &channels, 4);
+				},
+				[&](fastgltf::sources::Vector& vector)
+				{
+					pixels = stbi_load_from_memory(vector.bytes.data(), (int)vector.bytes.size(), &width, &height, &channels, 4);
+				},
+				[&](fastgltf::sources::BufferView& view)
+				{
+					fastgltf::BufferView& bufferView = asset.bufferViews[view.bufferViewIndex];
+					fastgltf::Buffer& buffer = asset.buffers[bufferView.bufferIndex];
+					
+					std::visit(
+						fastgltf::visitor{
+							[](auto& arg) {},
+							[&](fastgltf::sources::Vector& vector)
+							{
+								pixels = stbi_load_from_memory(
+									vector.bytes.data() + bufferView.byteOffset, 
+									(int)bufferView.byteLength, 
+									&width, 
+									&height, 
+									&channels, 
+									4
+								);
+							}
+						},
+						buffer.data
+					);
+				},
+			},
+			image.data
+		);
+
+		if (pixels)
 		{
-		case 0:
-			color0 = glm::packUnorm4x8({ 1, 0.5, 0, 1 });
-			color1 = glm::packUnorm4x8({ 1, 1, 0, 1 });
-			break;
-		case 1:
-			color0 = glm::packUnorm4x8({ 1, 1, 1, 1 });
-			color1 = glm::packUnorm4x8({ 0.5, 0.5, 0.5, 1 });
-			break;
-		case 2:
-			color0 = glm::packUnorm4x8({ 0, 0, 1, 1 });
-			color1 = glm::packUnorm4x8({ 0, 1, 0, 1 });
-			break;
-		default:
-			color0 = glm::packUnorm4x8({ 1, 0, 1, 1 });
-			color1 = glm::packUnorm4x8({ 0, 1, 1, 1 });
-			break;
+			textureAsset.mGpuData.initializeImage(renderer, (void*)pixels, width, height);
+			stbi_image_free(pixels);
+		}
+		else
+		{
+			// Checkerboard
+			const int size = 16;
+			std::array<uint32_t, size * size> checkerboard{};
+
+			uint32_t color0 = glm::packUnorm4x8({ 1, 0, 0, 1 });
+			uint32_t color1 = glm::packUnorm4x8({ 0, 0, 1, 1 });
+
+			for (int y = 0; y < size; y++)
+				for (int x = 0; x < size; x++)
+					checkerboard[y * size + x] = ((x % 2) ^ (y % 2)) ? color0 : color1;
+
+			textureAsset.mGpuData.initializeImage(renderer, checkerboard.data(), size, size);
 		}
 
-		std::array<uint32_t, 16 * 16> pixels{};
-
-		// Checkerboard
-		int checkerboardSize = 16;
-
-		for (int x = 0; x < checkerboardSize; x++)
-			for (int y = 0; y < checkerboardSize; y++)
-				pixels[y * checkerboardSize + x] = ((x % 2) ^ (y % 2)) ? color0 : color1;
-
-		Pipeline& pipeline = renderer.getPipeline();
-		TextureAsset textureAsset{};
-
-		textureAsset.mGpuData.mSampler = pipeline.mNearestSampler;
-		textureAsset.mGpuData.initializeImage(renderer, (void*)&pixels, checkerboardSize, checkerboardSize);
-
 		textures.push_back(textureAsset);
-
-		i++;
 	}
 
 	return textures;
@@ -158,15 +192,22 @@ std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::A
 		constants.mMetalRoughFactors.x = material.pbrData.metallicFactor;
 		constants.mMetalRoughFactors.y = material.pbrData.roughnessFactor;
 
-		// Texture
-		TextureAsset textureAsset{};
+		// Color texture
+		Texture colorTexture{};
+		
+		colorTexture.mSampler = pipeline.mLinearSampler;
 
-		if (i >= textures.size())
-			textureAsset = textures[1];
-		else
-			textureAsset = textures[i];
+		colorTexture.initializeWhiteImage(renderer);
 
-		Texture& colorTexture = textureAsset.mGpuData;
+		if (material.pbrData.baseColorTexture.has_value())
+		{
+			size_t imageIndex = asset.textures[material.pbrData.baseColorTexture.value().textureIndex]
+				.imageIndex.value();
+
+			colorTexture = textures[imageIndex].mGpuData;
+		}
+
+		// TODO: Metal rough texture
 
 		// Material
 		MaterialAsset materialAsset{};
@@ -180,6 +221,8 @@ std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::A
 		materialAsset.mGpuData.updateDescriptor(constants);
 
 		materials.push_back(materialAsset);
+		
+		//colorTexture.cleanupInitialized();
 
 		i++;
 	}

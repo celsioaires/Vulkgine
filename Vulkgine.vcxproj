@@ -93,7 +93,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\stb\include;$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -115,7 +115,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\stb\include;$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -135,7 +135,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\stb\include;$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -157,7 +157,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions);_SILENCE_CXX20_U8PATH_DEPRECATION_WARNING</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Vendor\stb\include;$(SolutionDir)Vendor\simdjson;$(SolutionDir)Vendor\fastgltf\include;$(SolutionDir)Vendor\imgui-1.92.9;$(SolutionDir)Vendor\vk-bootstrap-1.4.360\src;$(SolutionDir)Vendor\fmt-12.2.0\include;C:\VulkanSDK\1.4.357.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -207,6 +207,7 @@
     <ClCompile Include="Vendor\imgui-1.92.9\imgui_tables.cpp" />
     <ClCompile Include="Vendor\imgui-1.92.9\imgui_widgets.cpp" />
     <ClCompile Include="Vendor\simdjson\simdjson.cpp" />
+    <ClCompile Include="Vendor\stb\src\stb_image.cpp" />
     <ClCompile Include="Vendor\vk-bootstrap-1.4.360\src\VkBootstrap.cpp" />
   </ItemGroup>
   <ItemGroup>

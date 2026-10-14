@@ -46,6 +46,10 @@ bool Application::pollEvents(Event& event)
 
 		switch (e.type)
 		{
+		case SDL_KEYDOWN:
+			if (e.key.keysym.sym == SDLK_ESCAPE)
+				mQuit = true;
+			break;
 		case SDL_WINDOWEVENT:
 			switch (e.window.event)
 			{

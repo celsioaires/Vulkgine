@@ -67,6 +67,13 @@ void Texture::initializeImage(Renderer& renderer, void* pixels, uint32_t width, 
 	buffer.cleanup();
 }
 
+void Texture::initializeWhiteImage(Renderer& renderer)
+{
+	uint8_t pixels[]{ 255, 255, 255, 255 };
+
+	initializeImage(renderer, pixels, 1, 1);
+}
+
 void Texture::cleanupInitialized()
 {
 	mImage.cleanupInitialized();

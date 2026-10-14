@@ -1,14 +1,15 @@
 # Vulkgine
 
-Progress:
+Current progress:
 
-![Vulkgine](Vulkgine3.png)
+![Vulkgine](Vulkgine4.png)
 
 Vendor dependencies:
 - fastgltf
 - fmt
 - ImGui
 - simdjson
+- stb
 - vk-bootstrap
 
 External dependencies:

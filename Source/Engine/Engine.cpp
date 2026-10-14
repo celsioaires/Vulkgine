@@ -31,10 +31,9 @@ void Engine::cleanupInitialized()
 	mRenderer.cleanupInitialized();
 }
 
-void Engine::updateGui(Event event)
+void Engine::processEvents(Event event)
 {
 	mGui.updatePanels(event.mPointer);
-	mGui.drawPanels(mScene.getNodes(), mRenderer.getComputeEffect(), mRenderer.getRenderScale());
 	mRenderer.updateCamera(event.mPointer);
 }
 
@@ -44,9 +43,15 @@ void Engine::prepareFrame()
 	if (mRenderer.resizeRequested())
 		mRenderer.resizeSwapchain();
 
+	// Renderables
 	mRenderer.clearRenderables();
 	mScene.submitRenderables(mRenderer);
+
+	// Scene
 	mRenderer.updateScene();
+
+	// Gui
+	mGui.drawPanels(mScene.getNodes(), mRenderer.getComputeEffect(), mRenderer.getRenderScale());
 }
 
 void Engine::drawFrame()
