@@ -11,7 +11,6 @@ private:
 	GltfAsset mAsset{};
 public:
 	void initializeAsset(Renderer& renderer);
-
 	void cleanupInitialized();
 
 	void submitRenderables(Renderer& renderer);

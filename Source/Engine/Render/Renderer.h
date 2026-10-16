@@ -21,7 +21,9 @@ private:
 	bool mResizeRequested{};
 	float mRenderScale{ 1.0f };
 	Camera mCamera{};
-	std::vector<Renderable> mRenderables{};
+	std::vector<Renderable> mOpaqueRenderables{};
+	std::vector<Renderable> mTransparentRenderables{};
+	bool mEnableTransparents{};
 public:
 	// Initialize
 	void initializeContext(SDL_Window* window, uint32_t width, uint32_t height);
@@ -45,7 +47,7 @@ public:
 	// Renderables
 	void renderRenderables(VkCommandBuffer commandBuffer);
 	void clearRenderables();
-	void submitRenderable(Renderable& renderable);
+	void submitRenderable(Renderable& renderable, bool transparent);
 
 	// Camera
 	void updateCamera(SDL_Event* event);
@@ -62,4 +64,5 @@ public:
 	VkImageView getSwapchainView() { return mContext.mSwapchainViews[mSwapchainImageIndex]; }
 	Extent2D getSwapchainExtent() { return mContext.swapchainExtent; }
 	Pipeline& getPipeline() { return mPipeline; }
+	bool& getEnableTransparents() { return mEnableTransparents; }
 };

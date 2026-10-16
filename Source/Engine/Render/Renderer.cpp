@@ -303,12 +303,16 @@ void Renderer::updateScene()
 
 void Renderer::clearRenderables()
 {
-	mRenderables.clear();
+	mOpaqueRenderables.clear();
+	mTransparentRenderables.clear();
 }
 
-void Renderer::submitRenderable(Renderable& renderable)
+void Renderer::submitRenderable(Renderable& renderable, bool transparent)
 {
-	mRenderables.push_back(renderable);
+	if (transparent)
+		mTransparentRenderables.push_back(renderable);
+	else
+		mOpaqueRenderables.push_back(renderable);
 }
 
 void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
@@ -337,8 +341,8 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-	// Iterate renderables
-	for (Renderable& renderable : mRenderables)
+	// Iterate opaque renderables
+	for (Renderable& renderable : mOpaqueRenderables)
 	{
 		// Data
 		Mesh& mesh = renderable.mMesh;
@@ -365,21 +369,43 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 		vkCmdBindIndexBuffer(commandBuffer, mesh.mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed(commandBuffer, geometry.mIndexCount, 1, geometry.mStartIndex, 0, 0);
 	}
+
+	// Iterate transparent renderables
+	if (mEnableTransparents)
+		for (Renderable& renderable : mTransparentRenderables)
+		{
+			// Data
+			Mesh& mesh = renderable.mMesh;
+			Geometry& geometry = renderable.mGeometry;
+			Material& material = geometry.mMaterial;
+
+			// Push constants
+			GraphicsPushConstants pushConstants{};
+			pushConstants.mTransform = renderable.mTransform;
+			pushConstants.mVbo = mesh.mVertexBuffer.mAddress;
+
+			// Descriptors
+			std::vector<VkDescriptorSet> descriptorSets
+			{
+				mFrame.mUboDescriptorSet,
+				material.mSet
+			};
+
+			// Pipeline commands
+			vkCmdPushConstants(commandBuffer, mPipeline.mGraphicsPipelineLayout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GraphicsPushConstants), &pushConstants);
+			vkCmdBindDescriptorSets(commandBuffer, bindPoint, graphicsLayout, 0, (uint32_t)descriptorSets.size(), descriptorSets.data(), 0, 0);
+
+			// Draw commands
+			vkCmdBindIndexBuffer(commandBuffer, mesh.mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
+			vkCmdDrawIndexed(commandBuffer, geometry.mIndexCount, 1, geometry.mStartIndex, 0, 0);
+		}
 }
 
 void Renderer::updateCamera(SDL_Event* event)
 {
 	SDL_Event& e = *event;
 
-	if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_LALT)
-	{
-		SDL_SetRelativeMouseMode(SDL_FALSE);
-		return;
-	}
-
-	SDL_SetRelativeMouseMode(SDL_TRUE);
-
-	mCamera.processMovement(event);
+	// mCamera.processMovement(event);
 }
 
 VkCommandBuffer Renderer::beginImmediateRender()

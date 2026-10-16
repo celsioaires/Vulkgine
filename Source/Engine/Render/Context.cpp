@@ -102,12 +102,11 @@ void Context::initializeSwapchain(uint32_t width, uint32_t height)
 	// Surface
 	VkSurfaceFormatKHR surfaceFormat{};
 	surfaceFormat.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-	surfaceFormat.format = VK_FORMAT_B8G8R8A8_UNORM;
+	surfaceFormat.format = VK_FORMAT_B8G8R8A8_UNORM; // VK_FORMAT_R8G8B8A8_SRGB VK_FORMAT_B8G8R8A8_UNORM
 
 	// Usages
 	VkImageUsageFlags imageUsages =
 		VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-		VK_IMAGE_USAGE_STORAGE_BIT |
 		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	// Builder
@@ -116,7 +115,7 @@ void Context::initializeSwapchain(uint32_t width, uint32_t height)
 	// Create swapchain
 	vkb::Result<vkb::Swapchain> swapchainResult = swapchainBuilder
 		.set_desired_format(surfaceFormat)
-		.set_desired_present_mode(VK_PRESENT_MODE_IMMEDIATE_KHR) // VK_PRESENT_MODE_IMMEDIATE_KHR VK_PRESENT_MODE_FIFO_KHR
+		.set_desired_present_mode(VK_PRESENT_MODE_FIFO_KHR) // VK_PRESENT_MODE_IMMEDIATE_KHR VK_PRESENT_MODE_FIFO_KHR
 		.set_desired_extent(width, height)
 		.add_image_usage_flags(imageUsages)
 		.build();
@@ -139,10 +138,10 @@ void Context::initializeSwapchain(uint32_t width, uint32_t height)
 
 	mSwapchainViews = swapchainViewsResult.value();
 
-	imageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	imageUsages |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
 
 	// Render image
-	renderImage.initialize(allocator, VK_FORMAT_R16G16B16A16_SFLOAT, imageUsages, width, height);
+	renderImage.initialize(allocator, VK_FORMAT_R8G8B8A8_UNORM, imageUsages, width, height);
 	renderImage.initializeView(mDevice, VK_IMAGE_ASPECT_COLOR_BIT);
 
 	imageUsages = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;

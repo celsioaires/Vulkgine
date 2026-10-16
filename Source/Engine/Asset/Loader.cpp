@@ -182,6 +182,8 @@ std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::A
 	// Assets
 	for (fastgltf::Material& material : asset.materials) 
 	{
+		MaterialAsset materialAsset{};
+
 		// Constants
 		MaterialConstants constants{};
 
@@ -191,6 +193,9 @@ std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::A
 		constants.mColorFactors.w = material.pbrData.baseColorFactor[3];
 		constants.mMetalRoughFactors.x = material.pbrData.metallicFactor;
 		constants.mMetalRoughFactors.y = material.pbrData.roughnessFactor;
+
+		if (material.alphaMode == fastgltf::AlphaMode::Blend)
+			materialAsset.mGpuData.mType = MaterialType::Transparent;
 
 		// Color texture
 		Texture colorTexture{};
@@ -210,8 +215,6 @@ std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::A
 		// TODO: Metal rough texture
 
 		// Material
-		MaterialAsset materialAsset{};
-
 		materialAsset.mConstants = constants;
 		materialAsset.mGpuData.mColorTexture = colorTexture;
 
@@ -241,13 +244,13 @@ std::vector<MeshAsset> Loader::loadMeshes(Renderer& renderer, fastgltf::Asset& a
 
 	for (fastgltf::Mesh& mesh : asset.meshes)
 	{
-		vertices.clear();
-		indices.clear();
-
 		MeshAsset meshAsset{};
 
 		if (!mesh.name.empty())
 			meshAsset.mName = mesh.name;
+
+		vertices.clear();
+		indices.clear();
 
 		for (fastgltf::Primitive& primitive : mesh.primitives)
 		{

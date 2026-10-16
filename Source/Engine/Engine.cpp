@@ -51,7 +51,7 @@ void Engine::prepareFrame()
 	mRenderer.updateScene();
 
 	// Gui
-	mGui.drawPanels(mScene.getNodes(), mRenderer.getComputeEffect(), mRenderer.getRenderScale());
+	mGui.drawPanels(mScene.getNodes(), mRenderer.getComputeEffect(), mRenderer.getRenderScale(), mRenderer.getEnableTransparents());
 }
 
 void Engine::drawFrame()

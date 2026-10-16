@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include "../Scene/MeshNode.h"
+
 void Hierarchy::initialize(Node* node)
 {
     mSelectedNode = node;

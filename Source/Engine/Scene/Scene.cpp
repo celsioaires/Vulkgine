@@ -25,18 +25,26 @@ void Scene::submitRenderables(Renderer& renderer)
 
 		if (meshNode)
 		{
+			// Data
 			MeshAsset& meshAsset = meshNode->mAsset;
 			glm::mat4 topMatrix(1);
 			glm::mat4 nodeMatrix = topMatrix * meshNode->mWorldTransform;
 
-			for (Geometry& meshGeometry : meshAsset.mGeometries)
+			// Renderables
+			for (Geometry& geometry : meshAsset.mGeometries)
 			{
 				Renderable renderable{};
+
 				renderable.mMesh = meshAsset.mGpuData;
-				renderable.mGeometry = meshGeometry;
+				renderable.mGeometry = geometry;
 				renderable.mTransform = nodeMatrix;
 
-				renderer.submitRenderable(renderable);
+				bool transparent{};
+
+				if (geometry.mMaterial.mType == MaterialType::Transparent)
+					transparent = true;
+
+				renderer.submitRenderable(renderable, transparent);
 			}
 		}
 		// TODO: else if (otherNode)

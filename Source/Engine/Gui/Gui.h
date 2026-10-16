@@ -22,7 +22,7 @@ public:
 	void cleanupInitialized();
 
 	void updatePanels(SDL_Event* event);
-	void drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, float& renderScale);
+	void drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, float& renderScale, bool& enableTransparents);
 
 	void renderPanels(VkCommandBuffer commandBuffer, VkImageView imageView, Extent2D extent);
 };

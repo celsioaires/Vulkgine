@@ -6,6 +6,12 @@
 
 class Renderer;
 
+enum MaterialType
+{
+	Opaque,
+	Transparent
+};
+
 struct Material
 {
 	Texture mColorTexture{};
@@ -13,6 +19,7 @@ struct Material
 	Buffer mUbo{};
 	MaterialConstants mConstants{};
 	Descriptor* mDescriptor{};
+	MaterialType mType{};
 
 	void initializeDescriptor(Descriptor& descriptor, DescriptorLayout& layout);
 	void initializeUbo(Renderer& renderer);

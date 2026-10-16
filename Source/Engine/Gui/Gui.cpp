@@ -40,11 +40,12 @@ void Gui::initializeContext(SDL_Window* window, VkInstance instance, VkPhysicalD
 	assert(ImGui::CreateContext());
 
 	ImGui::StyleColorsClassic();
+	//ImGui::StyleColorsDark();
 	//ImGui::StyleColorsLight();
 	
 	assert(ImGui_ImplSDL2_InitForVulkan(window));
 
-	VkFormat colorAttachmentFormat = VK_FORMAT_B8G8R8A8_UNORM;
+	VkFormat colorAttachmentFormat = VK_FORMAT_B8G8R8A8_UNORM; // VK_FORMAT_R8G8B8A8_SRGB VK_FORMAT_B8G8R8A8_UNORM
 
 	VkPipelineRenderingCreateInfoKHR pipelineRenderingInfo{};
 	pipelineRenderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
@@ -92,7 +93,7 @@ void Gui::updatePanels(SDL_Event* event)
 	ImGui_ImplSDL2_ProcessEvent(event);
 }
 
-void Gui::drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, float& renderScale)
+void Gui::drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, float& renderScale, bool& enableTransparents)
 {
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
@@ -102,8 +103,16 @@ void Gui::drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, fl
 	mHierarchy.drawPanel(nodes);
 	mInspector.drawPanel(mHierarchy.getSelectedNode(), computeEffect);
 
-	ImGui::Begin("Dynamic resolution");
-	ImGui::SliderFloat("Scale", &renderScale, 0.250f, 1.0f);
+	ImGui::Begin("Settings");
+
+	// Render resolution
+	ImGui::Text("Render resolution");
+	ImGui::SliderFloat("##Render resolution", &renderScale, 0.250f, 1.0f, "%.2f");
+
+	// Enable transparents
+	ImGui::Text("Enable transparents");
+	ImGui::Checkbox("##Enable transparents", &enableTransparents);
+
 	ImGui::End();
 
 	ImGui::Render();

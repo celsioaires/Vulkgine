@@ -198,7 +198,7 @@ void Pipeline::initializeGraphics(VkDescriptorSetLayout uboDescriptorSetLayout)
 	graphicsPipelineLayoutInfo.pushConstantRangeCount = 1;
 
 	// Rendering 
-	VkFormat colorAttachmentFormat = VK_FORMAT_R16G16B16A16_SFLOAT;
+	VkFormat colorAttachmentFormat = VK_FORMAT_R8G8B8A8_UNORM;
 	
 	VkPipelineRenderingCreateInfo pipelineRenderingInfo{};
 	pipelineRenderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
