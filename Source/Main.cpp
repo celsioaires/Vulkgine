@@ -1,10 +1,10 @@
 #include "Application.h"
 #include "Engine/Engine.h"
 
-// Static
-
 static Application sApplication{};
 static Engine sEngine{};
+
+// Static
 
 static void initializeApplication()
 {

@@ -39,6 +39,8 @@ void Engine::processEvents(Event event)
 
 void Engine::prepareFrame()
 {
+	mInfo.mTriangleCount = mRenderer.getTriangleCount(); // TODO: move to Engine::updateStats()
+
 	// Resizing
 	if (mRenderer.resizeRequested())
 		mRenderer.resizeSwapchain();
@@ -51,7 +53,7 @@ void Engine::prepareFrame()
 	mRenderer.updateScene();
 
 	// Gui
-	mGui.drawPanels(mScene.getNodes(), mRenderer.getComputeEffect(), mRenderer.getRenderScale(), mRenderer.getEnableTransparents());
+	mGui.drawPanels(mScene.getNodes(), mRenderer.getComputeEffect(), mRenderer.getRenderScale(), mRenderer.getEnableTransparents(), mInfo);
 }
 
 void Engine::drawFrame()

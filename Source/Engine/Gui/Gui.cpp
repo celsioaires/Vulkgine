@@ -93,7 +93,7 @@ void Gui::updatePanels(SDL_Event* event)
 	ImGui_ImplSDL2_ProcessEvent(event);
 }
 
-void Gui::drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, float& renderScale, bool& enableTransparents)
+void Gui::drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, float& renderScale, bool& enableTransparents, Info info)
 {
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplSDL2_NewFrame();
@@ -102,6 +102,7 @@ void Gui::drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, fl
 
 	mHierarchy.drawPanel(nodes);
 	mInspector.drawPanel(mHierarchy.getSelectedNode(), computeEffect);
+	mStats.drawPanel(info);
 
 	ImGui::Begin("Settings");
 

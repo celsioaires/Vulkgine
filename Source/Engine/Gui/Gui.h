@@ -4,6 +4,7 @@
 
 #include "Inspector.h"
 #include "Hierarchy.h"
+#include "Stats.h"
 
 #include "../Scene/Node.h"
 
@@ -14,6 +15,7 @@ private:
 	VkDescriptorPool mDescriptorPool{};
 	Inspector mInspector{};
 	Hierarchy mHierarchy{};
+	Stats mStats{};
 public:
 	void initializeDescriptors(VkDevice device);
 	void initializeContext(SDL_Window* window, VkInstance instance, VkPhysicalDevice physicalDevice, VkQueue queue);
@@ -22,7 +24,7 @@ public:
 	void cleanupInitialized();
 
 	void updatePanels(SDL_Event* event);
-	void drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, float& renderScale, bool& enableTransparents);
+	void drawPanels(std::vector<Node*>& nodes, ComputeEffect& computeEffect, float& renderScale, bool& enableTransparents, Info info);
 
 	void renderPanels(VkCommandBuffer commandBuffer, VkImageView imageView, Extent2D extent);
 };

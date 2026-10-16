@@ -317,6 +317,8 @@ void Renderer::submitRenderable(Renderable& renderable, bool transparent)
 
 void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 {
+	mTriangleCount = 0;
+
 	// Pipeline
 	VkPipelineBindPoint bindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	VkPipelineLayout graphicsLayout = mPipeline.mGraphicsPipelineLayout;
@@ -330,7 +332,7 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 	// Scissor
 	VkRect2D scissor{};
 	scissor.extent = { mExtent.width, mExtent.height };
-
+	
 	// Descriptor
 	Descriptor& frameDescriptor = mFrame.mDescriptor;
 
@@ -368,6 +370,8 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 		// Draw commands
 		vkCmdBindIndexBuffer(commandBuffer, mesh.mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed(commandBuffer, geometry.mIndexCount, 1, geometry.mStartIndex, 0, 0);
+
+		mTriangleCount += geometry.mIndexCount / 3;
 	}
 
 	// Iterate transparent renderables
@@ -398,6 +402,8 @@ void Renderer::renderRenderables(VkCommandBuffer commandBuffer)
 			// Draw commands
 			vkCmdBindIndexBuffer(commandBuffer, mesh.mIndexBuffer.mBuffer, 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, geometry.mIndexCount, 1, geometry.mStartIndex, 0, 0);
+			
+			mTriangleCount += geometry.mIndexCount / 3;
 		}
 }
 

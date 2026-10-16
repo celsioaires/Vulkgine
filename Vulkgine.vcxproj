@@ -197,6 +197,7 @@
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Engine\Render\Util.cpp" />
     <ClCompile Include="Source\Engine\Render\Texture.cpp" />
+    <ClCompile Include="Source\Engine\Gui\Stats.cpp" />
     <ClCompile Include="Vendor\fastgltf\src\base64.cpp" />
     <ClCompile Include="Vendor\fastgltf\src\fastgltf.cpp" />
     <ClCompile Include="Vendor\fmt-12.2.0\src\format.cc" />
@@ -213,6 +214,7 @@
   <ItemGroup>
     <ClInclude Include="Source\Engine\Asset\GltfAsset.h" />
     <ClInclude Include="Source\Engine\Asset\MaterialAsset.h" />
+    <ClInclude Include="Source\Engine\Core\Info.h" />
     <ClInclude Include="Source\Engine\Gui\Hierarchy.h" />
     <ClInclude Include="Source\Engine\Asset\TextureAsset.h" />
     <ClInclude Include="Source\Engine\Render\Camera.h" />
@@ -237,6 +239,7 @@
     <ClInclude Include="Source\Application.h" />
     <ClInclude Include="Source\Engine\Render\Util.h" />
     <ClInclude Include="Source\Engine\Render\Texture.h" />
+    <ClInclude Include="Source\Engine\Gui\Stats.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

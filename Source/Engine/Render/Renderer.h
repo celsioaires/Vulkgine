@@ -24,6 +24,7 @@ private:
 	std::vector<Renderable> mOpaqueRenderables{};
 	std::vector<Renderable> mTransparentRenderables{};
 	bool mEnableTransparents{};
+	int mTriangleCount{};
 public:
 	// Initialize
 	void initializeContext(SDL_Window* window, uint32_t width, uint32_t height);
@@ -45,9 +46,9 @@ public:
 	void updateScene();
 	
 	// Renderables
-	void renderRenderables(VkCommandBuffer commandBuffer);
 	void clearRenderables();
 	void submitRenderable(Renderable& renderable, bool transparent);
+	void renderRenderables(VkCommandBuffer commandBuffer);
 
 	// Camera
 	void updateCamera(SDL_Event* event);
@@ -65,4 +66,5 @@ public:
 	Extent2D getSwapchainExtent() { return mContext.swapchainExtent; }
 	Pipeline& getPipeline() { return mPipeline; }
 	bool& getEnableTransparents() { return mEnableTransparents; }
+	int getTriangleCount() { return mTriangleCount; };
 };

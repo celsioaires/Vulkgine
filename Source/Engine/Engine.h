@@ -2,6 +2,7 @@
 
 #include "Core/Window.h"
 #include "Core/Event.h"
+#include "Core/Info.h"
 #include "Gui/Gui.h"
 #include "Render/Renderer.h"
 #include "Scene/Scene.h"
@@ -12,6 +13,7 @@ private:
 	Renderer mRenderer{};
 	Scene mScene{};
 	Gui mGui{};
+	Info mInfo{};
 public:
 	void initializeRenderer(Window window);
 	void initializeScene();
