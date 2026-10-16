@@ -74,12 +74,12 @@ GltfAsset Loader::loadGltf(Renderer& renderer, std::filesystem::path path)
 	std::vector<MeshAsset> meshes = loadMeshes(renderer, asset, materials);
 	std::vector<Node*> nodes = loadNodes(asset, meshes);
 	std::vector<Node*> topNodes = loadTopNodes(nodes);
-	
-	gltf.mTextures = textures;
-	gltf.mMaterials = materials;
-	gltf.mMeshes = meshes;
-	gltf.mNodes = nodes;
-	gltf.mTopNodes = topNodes;
+
+	gltf.mTextures = std::move(textures);
+	gltf.mMaterials = std::move(materials);
+	gltf.mMeshes = std::move(meshes);
+	gltf.mNodes = std::move(nodes);
+	gltf.mTopNodes = std::move(topNodes);
 
 	return gltf;
 }
@@ -90,16 +90,14 @@ std::vector<TextureAsset> Loader::loadTextures(Renderer& renderer, fastgltf::Ass
 
 	Pipeline& pipeline = renderer.getPipeline();
 
-	// Texture
-	TextureAsset textureAsset{};
-	textureAsset.mGpuData.mSampler = pipeline.mNearestSampler;
-
-	stbi_uc* pixels{};
-
 	// Assets
 	for (fastgltf::Image& image : asset.images)
 	{
+		TextureAsset textureAsset{};
+		textureAsset.mGpuData.mSampler = pipeline.mNearestSampler;
+
 		int width{}, height{}, channels{};
+		stbi_uc* pixels{};
 
 		std::visit(
 			fastgltf::visitor{
@@ -165,7 +163,7 @@ std::vector<TextureAsset> Loader::loadTextures(Renderer& renderer, fastgltf::Ass
 			textureAsset.mGpuData.initializeImage(renderer, checkerboard.data(), size, size);
 		}
 
-		textures.push_back(textureAsset);
+		textures.push_back(std::move(textureAsset));
 	}
 
 	return textures;
@@ -202,14 +200,18 @@ std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::A
 		
 		colorTexture.mSampler = pipeline.mLinearSampler;
 
-		colorTexture.initializeWhiteImage(renderer);
-
 		if (material.pbrData.baseColorTexture.has_value())
 		{
 			size_t imageIndex = asset.textures[material.pbrData.baseColorTexture.value().textureIndex]
 				.imageIndex.value();
 
 			colorTexture = textures[imageIndex].mGpuData;
+		}
+		else
+		{
+			colorTexture.initializeWhiteImage(renderer);
+
+			textures.push_back({ colorTexture });
 		}
 
 		// TODO: Metal rough texture
@@ -223,9 +225,7 @@ std::vector<MaterialAsset> Loader::loadMaterials(Renderer& renderer, fastgltf::A
 
 		materialAsset.mGpuData.updateDescriptor(constants);
 
-		materials.push_back(materialAsset);
-		
-		//colorTexture.cleanupInitialized();
+		materials.push_back(std::move(materialAsset));
 
 		i++;
 	}
@@ -431,8 +431,23 @@ std::vector<Node*> Loader::loadTopNodes(std::vector<Node*>& nodes)
 		if (!node->mParent)
 		{
 			topNodes.push_back(node);
-			node->updateTransform(glm::mat4{ 1.f });
+			node->updateTransform(glm::mat4(1));
 		}
 
 	return topNodes;
+}
+
+void Loader::unloadGltf(GltfAsset& asset)
+{
+	for (TextureAsset& texture : asset.mTextures)
+		texture.mGpuData.cleanupInitialized();
+
+	for (MaterialAsset& material : asset.mMaterials)
+		material.mGpuData.cleanupInitialized();
+
+	for (MeshAsset& mesh : asset.mMeshes)
+		mesh.mGpuData.cleanupInitialized();
+
+	for (Node* node : asset.mNodes)
+		delete node;
 }

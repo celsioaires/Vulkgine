@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Descriptor.h"
+#include "Texture.h"
 
 struct Pipeline
 {

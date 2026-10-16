@@ -13,10 +13,10 @@ void Context::initializeDevice(SDL_Window* window)
 {
 	mWindow = window;
 
+	bool enableValidation{};
+
 #ifdef _DEBUG
-	bool enableValidation = true;
-#else
-	bool enableValidation = false;
+	enableValidation = true;
 #endif
 
 	// Instance
@@ -33,6 +33,7 @@ void Context::initializeDevice(SDL_Window* window)
 	assert(instanceResult.has_value());
 
 	vkb::Instance& vkbInstance = instanceResult.value();
+
 	instance = vkbInstance.instance;
 	debugMessenger = vkbInstance.debug_messenger;
 
@@ -62,6 +63,7 @@ void Context::initializeDevice(SDL_Window* window)
 	assert(physicalDeviceResult.has_value());
 
 	vkb::PhysicalDevice& vkbPhysicalDevice = physicalDeviceResult.value();
+
 	physicalDevice = vkbPhysicalDevice.physical_device;
 
 	// Device
@@ -71,6 +73,7 @@ void Context::initializeDevice(SDL_Window* window)
 	assert(deviceResult.has_value());
 
 	vkb::Device& vkbDevice = deviceResult.value();
+
 	mDevice = vkbDevice.device;
 
 	// Graphics queue

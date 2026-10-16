@@ -14,7 +14,7 @@ void Scene::initializeAsset(Renderer& renderer)
 
 void Scene::cleanupInitialized()
 {
-
+	Loader::unloadGltf(mAsset);
 }
 
 void Scene::submitRenderables(Renderer& renderer)

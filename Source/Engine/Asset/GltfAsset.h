@@ -12,9 +12,4 @@ struct GltfAsset
 	std::vector<MeshAsset> mMeshes{};
 	std::vector<Node*> mNodes{};
 	std::vector<Node*> mTopNodes{};
-
-	~GltfAsset()
-	{
-
-	}
 };
